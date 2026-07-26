@@ -1,0 +1,212 @@
+# Builds the Shairport Sync docker images and pushes them to Docker Hub.
+#
+# Required repository secrets:
+#   DOCKERHUB_USERNAME - Docker Hub account name
+#   DOCKERHUB_TOKEN    - Docker Hub access token (Account Settings -> Personal access tokens)
+# Optional repository variable:
+#   DOCKERHUB_IMAGE    - image name, defaults to htx996/shairport-sync
+#
+# Tags produced (the "classic" build gets the same tag with a -classic suffix,
+# except for "latest", whose classic counterpart is "classic"):
+#   push to master      -> rolling
+#   push to development -> development
+#   push to any other
+#   listed branch       -> the branch name with "/" replaced by "-"
+#   push of a git tag   -> the tag name, plus latest
+#   manual run          -> the value of the "image_tag" input, or the rules above
+#
+# See docker/DOCKER-HUB-PUBLISHING.md for the setup steps.
+name: Publish docker images to Docker Hub
+
+on:
+  workflow_dispatch:
+    inputs:
+      variant:
+        description: "Which image(s) to build"
+        type: choice
+        default: both
+        options:
+          - both
+          - main
+          - classic
+      platforms:
+        description: "Platforms to build for"
+        type: choice
+        default: linux/amd64,linux/arm64
+        options:
+          - linux/amd64,linux/arm64
+          - linux/amd64
+          - linux/arm64
+          - linux/386,linux/amd64,linux/arm/v7,linux/arm64
+      image_tag:
+        description: "Override the image tag (optional)"
+        type: string
+        required: false
+      push:
+        description: "Push to Docker Hub (uncheck for a build-only test)"
+        type: boolean
+        default: true
+  push:
+    branches:
+      - master
+      - development
+      - claude/github-docker-hub-integration-pfpf3p
+    tags:
+      - "*"
+
+concurrency:
+  group: docker-hub-publish-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prepare:
+    name: Work out what to build
+    runs-on: ubuntu-22.04
+    outputs:
+      image: ${{ steps.vars.outputs.image }}
+      platforms: ${{ steps.vars.outputs.platforms }}
+      push: ${{ steps.vars.outputs.push }}
+      base_tags: ${{ steps.vars.outputs.base_tags }}
+      nqptp_branch: ${{ steps.vars.outputs.nqptp_branch }}
+      matrix: ${{ steps.vars.outputs.matrix }}
+    steps:
+      - name: Set variables
+        id: vars
+        env:
+          IMAGE: ${{ vars.DOCKERHUB_IMAGE || 'htx996/shairport-sync' }}
+          INPUT_PLATFORMS: ${{ inputs.platforms }}
+          INPUT_VARIANT: ${{ inputs.variant }}
+          INPUT_TAG: ${{ inputs.image_tag }}
+          INPUT_PUSH: ${{ inputs.push }}
+          REF_NAME: ${{ github.ref_name }}
+          REF_TYPE: ${{ github.ref_type }}
+          HAVE_CREDENTIALS: ${{ secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
+        run: |
+          set -euo pipefail
+
+          echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+          echo "platforms=${INPUT_PLATFORMS:-linux/amd64,linux/arm64}" >> "$GITHUB_OUTPUT"
+
+          # NQPTP follows the branch being built, as it does upstream.
+          if [ "$REF_TYPE" = "branch" ] && [ "$REF_NAME" = "development" ]; then
+            echo "nqptp_branch=development" >> "$GITHUB_OUTPUT"
+          else
+            echo "nqptp_branch=main" >> "$GITHUB_OUTPUT"
+          fi
+
+          # Which images to build.
+          case "${INPUT_VARIANT:-both}" in
+            main)    matrix='{"include":[{"name":"main","dockerfile":"./docker/Dockerfile"}]}' ;;
+            classic) matrix='{"include":[{"name":"classic","dockerfile":"./docker/classic/Dockerfile"}]}' ;;
+            *)       matrix='{"include":[{"name":"main","dockerfile":"./docker/Dockerfile"},{"name":"classic","dockerfile":"./docker/classic/Dockerfile"}]}' ;;
+          esac
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+
+          # Tag names, before the per-variant suffix is applied.
+          if [ -n "${INPUT_TAG:-}" ]; then
+            base_tags="$INPUT_TAG"
+          elif [ "$REF_TYPE" = "tag" ]; then
+            base_tags="$REF_NAME latest"
+          elif [ "$REF_NAME" = "master" ]; then
+            base_tags="rolling"
+          elif [ "$REF_NAME" = "development" ]; then
+            base_tags="development"
+          else
+            base_tags="$(printf '%s' "$REF_NAME" | tr '/' '-')"
+          fi
+          echo "base_tags=$base_tags" >> "$GITHUB_OUTPUT"
+
+          # Push unless explicitly asked not to, and only if credentials are present.
+          push=true
+          if [ "${INPUT_PUSH:-true}" != "true" ]; then
+            push=false
+            echo "::notice::Build-only run requested; the images will not be pushed."
+          elif [ "$HAVE_CREDENTIALS" != "true" ]; then
+            push=false
+            echo "::warning::DOCKERHUB_USERNAME and/or DOCKERHUB_TOKEN are not set, so the images will be built but not pushed. See docker/DOCKER-HUB-PUBLISHING.md."
+          fi
+          echo "push=$push" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build ${{ matrix.name }} image
+    needs: prepare
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    steps:
+      - name: Checkout shairport-sync repo
+        uses: actions/checkout@v7.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Assemble the tag list
+        id: tags
+        env:
+          IMAGE: ${{ needs.prepare.outputs.image }}
+          BASE_TAGS: ${{ needs.prepare.outputs.base_tags }}
+          VARIANT: ${{ matrix.name }}
+        run: |
+          set -euo pipefail
+          {
+            echo "list<<EOF"
+            for tag in $BASE_TAGS; do
+              if [ "$VARIANT" = "classic" ]; then
+                if [ "$tag" = "latest" ]; then
+                  tag="classic"
+                else
+                  tag="${tag}-classic"
+                fi
+              fi
+              echo "${IMAGE}:${tag}"
+            done
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Log in to Docker Hub
+        if: needs.prepare.outputs.push == 'true'
+        uses: docker/login-action@v4.2.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4.1.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4.1.0
+
+      - name: Build and conditionally push the ${{ matrix.name }} image
+        uses: docker/build-push-action@v7.2.0
+        with:
+          context: ./
+          file: ${{ matrix.dockerfile }}
+          platforms: ${{ needs.prepare.outputs.platforms }}
+          push: ${{ needs.prepare.outputs.push == 'true' }}
+          tags: ${{ steps.tags.outputs.list }}
+          build-args: |
+            SHAIRPORT_SYNC_BRANCH=.
+            NQPTP_BRANCH=${{ needs.prepare.outputs.nqptp_branch }}
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,scope=${{ matrix.name }},mode=max
+
+      - name: Summary
+        env:
+          TAGS: ${{ steps.tags.outputs.list }}
+          PUSHED: ${{ needs.prepare.outputs.push }}
+          PLATFORMS: ${{ needs.prepare.outputs.platforms }}
+        run: |
+          set -euo pipefail
+          {
+            echo "### ${{ matrix.name }} image"
+            echo ""
+            echo "- Platforms: \`$PLATFORMS\`"
+            if [ "$PUSHED" = "true" ]; then
+              echo "- Pushed to Docker Hub:"
+            else
+              echo "- Built only (not pushed); would have been tagged:"
+            fi
+            for tag in $TAGS; do
+              echo "  - \`$tag\`"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
