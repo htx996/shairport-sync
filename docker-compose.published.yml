@@ -2,7 +2,7 @@ name: shairport-sync-panel
 
 services:
   shairport-sync:
-    image: docker.io/${DOCKERHUB_NAMESPACE:-REPLACE_ME}/shairport-sync-airplay2:latest
+    image: docker.io/${DOCKERHUB_NAMESPACE:-hanfu1997}/shairport-sync-airplay2:latest
     container_name: shairport-sync
     platform: linux/amd64
     network_mode: host
@@ -21,7 +21,7 @@ services:
         max-file: "5"
 
   webui:
-    image: docker.io/${DOCKERHUB_NAMESPACE:-REPLACE_ME}/shairport-sync-webui:latest
+    image: docker.io/${DOCKERHUB_NAMESPACE:-hanfu1997}/shairport-sync-webui:latest
     container_name: shairport-sync-webui
     platform: linux/amd64
     network_mode: host
