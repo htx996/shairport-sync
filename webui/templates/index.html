@@ -1,0 +1,1165 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shairport Sync</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --system-bg: #F2F2F7;
+      --system-surface: rgba(255, 255, 255, 0.58);
+      --system-surface-strong: rgba(255, 255, 255, 0.78);
+      --toolbar-surface: rgba(255, 255, 255, 0.86);
+      --label: #000;
+      --secondary: rgba(60, 60, 67, 0.72);
+      --tertiary: rgba(60, 60, 67, 0.36);
+      --separator: rgba(60, 60, 67, 0.22);
+      --blue: #007AFF;
+      --green: #34C759;
+      --red: #FF3B30;
+      --orange: #FF9500;
+      --fill: rgba(120, 120, 128, 0.16);
+      --shadow: rgba(31, 41, 55, 0.15);
+      --radius-card: 26px;
+      --radius-inner: 16px;
+      --page-max: 1180px;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --system-bg: #000;
+        --system-surface: rgba(44, 44, 46, 0.54);
+        --system-surface-strong: rgba(44, 44, 46, 0.74);
+        --toolbar-surface: rgba(28, 28, 30, 0.88);
+        --label: #fff;
+        --secondary: rgba(235, 235, 245, 0.68);
+        --tertiary: rgba(235, 235, 245, 0.34);
+        --separator: rgba(84, 84, 88, 0.56);
+        --fill: rgba(118, 118, 128, 0.28);
+        --shadow: rgba(0, 0, 0, 0.38);
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      min-height: 100%;
+      background: var(--system-bg);
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--label);
+      background:
+        radial-gradient(circle at 12% 10%, rgba(0, 122, 255, 0.24), transparent 32%),
+        radial-gradient(circle at 88% 8%, rgba(52, 199, 89, 0.18), transparent 30%),
+        radial-gradient(circle at 18% 82%, rgba(255, 149, 0, 0.20), transparent 34%),
+        radial-gradient(circle at 86% 76%, rgba(255, 45, 85, 0.16), transparent 32%),
+        var(--system-bg);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: -12%;
+      z-index: -2;
+      background:
+        radial-gradient(ellipse at 18% 22%, rgba(10, 132, 255, 0.34), transparent 34%),
+        radial-gradient(ellipse at 70% 18%, rgba(48, 209, 88, 0.24), transparent 31%),
+        radial-gradient(ellipse at 26% 78%, rgba(255, 159, 10, 0.22), transparent 36%),
+        radial-gradient(ellipse at 82% 72%, rgba(191, 90, 242, 0.18), transparent 34%);
+      filter: blur(34px) saturate(1.25);
+      opacity: 0.94;
+      pointer-events: none;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: linear-gradient(180deg, rgba(255,255,255,0.34), rgba(255,255,255,0.06) 34%, rgba(255,255,255,0.18));
+      pointer-events: none;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body::after {
+        background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(0,0,0,0.20) 36%, rgba(0,0,0,0.52));
+      }
+    }
+
+    @media (prefers-reduced-transparency: reduce) {
+      body,
+      body::before,
+      body::after {
+        background: var(--system-bg);
+        filter: none;
+      }
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .shell {
+      width: min(var(--page-max), calc(100vw - 48px));
+      margin: 0 auto;
+      padding: 22px 0 124px;
+    }
+
+    .glass {
+      background: var(--system-surface);
+      border: 1px solid rgba(255, 255, 255, 0.44);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.52),
+        inset 0 -18px 36px rgba(255, 255, 255, 0.08),
+        0 22px 64px var(--shadow);
+      -webkit-backdrop-filter: blur(28px) saturate(1.85);
+      backdrop-filter: blur(28px) saturate(1.85);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .glass {
+        border-color: rgba(255, 255, 255, 0.18);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.16),
+          inset 0 -18px 36px rgba(255, 255, 255, 0.04),
+          0 24px 72px var(--shadow);
+      }
+    }
+
+    @media (prefers-reduced-transparency: reduce) {
+      .glass {
+        background: var(--system-surface-strong);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+      }
+    }
+
+    .nav {
+      position: sticky;
+      top: 14px;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 54px;
+      margin-bottom: 26px;
+      padding: 11px 16px;
+      border-radius: 27px;
+      transition: max-width 220ms ease, transform 220ms ease, padding 220ms ease;
+    }
+
+    .nav.scrolled {
+      max-width: 390px;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 8px 12px;
+      transform: translateY(2px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      flex: 0 0 34px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: linear-gradient(145deg, var(--blue), var(--green));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.38), 0 8px 20px rgba(0,122,255,0.24);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 17px;
+      line-height: 1.15;
+      font-weight: 700;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+
+    .brand p {
+      margin: 1px 0 0;
+      color: var(--secondary);
+      font-size: 12px;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 32px;
+      padding: 0 12px;
+      border-radius: 999px;
+      color: var(--secondary);
+      background: rgba(118, 118, 128, 0.12);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 4px rgba(52, 199, 89, 0.16);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(300px, 420px) minmax(0, 680px);
+      gap: 32px;
+      align-items: start;
+    }
+
+    .left-rail {
+      position: sticky;
+      top: 96px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .right-rail {
+      display: grid;
+      gap: 16px;
+    }
+
+    .hero {
+      border-radius: var(--radius-card);
+      padding: 24px;
+    }
+
+    .hero h2 {
+      margin: 0;
+      font-size: 34px;
+      line-height: 1.08;
+      font-weight: 760;
+      letter-spacing: 0;
+    }
+
+    .hero p {
+      margin: 14px 0 0;
+      color: var(--secondary);
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .summary-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .summary-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      min-height: 42px;
+      padding: 9px 12px;
+      border-radius: var(--radius-inner);
+      background: rgba(118, 118, 128, 0.12);
+    }
+
+    .summary-item span:first-child {
+      color: var(--secondary);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .summary-item span:last-child {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .warning-box {
+      display: none;
+      border-radius: var(--radius-card);
+      padding: 16px 18px;
+      color: #3A2A00;
+      background: rgba(255, 204, 0, 0.26);
+      border: 1px solid rgba(255, 204, 0, 0.36);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .warning-box {
+        color: #FFE28A;
+        background: rgba(255, 204, 0, 0.13);
+      }
+    }
+
+    .warning-box.visible {
+      display: block;
+    }
+
+    .group {
+      border-radius: var(--radius-card);
+      overflow: hidden;
+    }
+
+    .group-head {
+      padding: 18px 20px 10px;
+    }
+
+    .group-head h3 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.2;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .group-body {
+      margin: 0 10px 10px;
+      border-radius: var(--radius-inner);
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.38);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .group-body {
+        background: rgba(0, 0, 0, 0.16);
+      }
+    }
+
+    .row {
+      position: relative;
+      display: flex;
+      align-items: center;
+      min-height: 54px;
+      padding: 8px 12px;
+      gap: 14px;
+    }
+
+    .row + .row {
+      border-top: 1px solid var(--separator);
+    }
+
+    .row-label {
+      flex: 0 0 auto;
+      white-space: nowrap;
+      font-size: 16px;
+      color: var(--label);
+    }
+
+    .row-control {
+      min-width: 0;
+      flex: 1 1 auto;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .text-input,
+    .number-input {
+      width: 100%;
+      min-width: 0;
+      border: 0;
+      outline: 0;
+      text-align: right;
+      color: var(--label);
+      background: transparent;
+      font-size: 16px;
+      line-height: 1.3;
+    }
+
+    .number-input {
+      max-width: 104px;
+    }
+
+    .select-row {
+      cursor: pointer;
+    }
+
+    .select-value {
+      color: var(--secondary);
+      font-size: 15px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: right;
+    }
+
+    .chevron {
+      width: 8px;
+      height: 8px;
+      flex: 0 0 8px;
+      border-top: 2px solid var(--tertiary);
+      border-right: 2px solid var(--tertiary);
+      transform: rotate(45deg);
+    }
+
+    .native-select {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .note {
+      margin: -1px 20px 18px;
+      color: var(--secondary);
+      font-size: 13px;
+      line-height: 1.42;
+    }
+
+    .model-segment {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      padding: 4px;
+      width: 100%;
+      border-radius: var(--radius-inner);
+      background: rgba(118, 118, 128, 0.18);
+    }
+
+    .seg-option {
+      min-width: 0;
+      min-height: 56px;
+      padding: 7px 8px;
+      color: var(--secondary);
+      background: transparent;
+      border-radius: 12px;
+      text-align: center;
+      transition: background 160ms ease, color 160ms ease, box-shadow 160ms ease;
+    }
+
+    .seg-option strong,
+    .seg-option span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .seg-option strong {
+      color: inherit;
+      font-size: 13px;
+      line-height: 1.2;
+      font-weight: 650;
+    }
+
+    .seg-option span {
+      margin-top: 3px;
+      font-size: 11px;
+      line-height: 1.15;
+      color: inherit;
+      opacity: 0.82;
+    }
+
+    .seg-option.active {
+      color: var(--label);
+      background: var(--system-surface-strong);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.10), inset 0 1px 0 rgba(255,255,255,0.42);
+    }
+
+    .switch {
+      position: relative;
+      width: 51px;
+      height: 31px;
+      flex: 0 0 51px;
+      display: inline-block;
+    }
+
+    .switch input {
+      position: absolute;
+      opacity: 0;
+      inset: 0;
+    }
+
+    .switch-track {
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      background: rgba(120, 120, 128, 0.32);
+      transition: background 180ms ease;
+    }
+
+    .switch-track::after {
+      content: "";
+      position: absolute;
+      width: 27px;
+      height: 27px;
+      top: 2px;
+      left: 2px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.22), 0 1px 1px rgba(0,0,0,0.10);
+      transition: transform 180ms ease;
+    }
+
+    .switch input:checked + .switch-track {
+      background: var(--green);
+    }
+
+    .switch input:checked + .switch-track::after {
+      transform: translateX(20px);
+    }
+
+    .range-wrap {
+      display: grid;
+      grid-template-columns: minmax(120px, 1fr) 48px;
+      align-items: center;
+      gap: 12px;
+      width: min(320px, 100%);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 31px;
+      margin: 0;
+      appearance: none;
+      background: transparent;
+      --range-fill: 70%;
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 7px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--blue) 0 var(--range-fill), rgba(120,120,128,0.24) var(--range-fill) 100%);
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 27px;
+      height: 27px;
+      margin-top: -10px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.26);
+    }
+
+    input[type="range"]::-moz-range-track {
+      height: 7px;
+      border-radius: 999px;
+      background: rgba(120,120,128,0.24);
+    }
+
+    input[type="range"]::-moz-range-progress {
+      height: 7px;
+      border-radius: 999px;
+      background: var(--blue);
+    }
+
+    .range-value {
+      color: var(--secondary);
+      font-size: 14px;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 160px;
+      resize: vertical;
+      border: 0;
+      outline: 0;
+      color: var(--label);
+      background: transparent;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .code-box {
+      margin: 0 10px 10px;
+      padding: 12px;
+      max-height: 320px;
+      overflow: auto;
+      border-radius: var(--radius-inner);
+      color: var(--label);
+      background: rgba(0, 0, 0, 0.06);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .code-box {
+        background: rgba(0, 0, 0, 0.28);
+      }
+    }
+
+    .action-shell {
+      position: fixed;
+      left: 18px;
+      right: 18px;
+      bottom: 18px;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .action-shell::before {
+      content: "";
+      position: absolute;
+      left: -18px;
+      right: -18px;
+      bottom: -18px;
+      height: 112px;
+      background: linear-gradient(180deg, rgba(242,242,247,0), var(--system-bg) 72%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .action-align {
+      width: min(var(--page-max), calc(100vw - 48px));
+      margin: 0 auto;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .toolbar {
+      width: min(680px, 100%);
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 25px;
+      background: var(--toolbar-surface);
+      -webkit-backdrop-filter: blur(36px) saturate(2);
+      backdrop-filter: blur(36px) saturate(2);
+      border: 1px solid rgba(255,255,255,0.48);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.56),
+        0 18px 54px rgba(0,0,0,0.20);
+    }
+
+    .toolbar-status {
+      min-width: 0;
+      flex: 1 1 auto;
+      color: var(--secondary);
+      font-size: 13px;
+      line-height: 1.25;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding: 0 6px;
+    }
+
+    .btn {
+      min-height: 40px;
+      padding: 0 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      border-radius: 999px;
+      color: var(--label);
+      background: rgba(118,118,128,0.16);
+      font-size: 14px;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+
+    .btn svg {
+      width: 17px;
+      height: 17px;
+      flex: 0 0 17px;
+    }
+
+    .btn.primary {
+      color: #fff;
+      background: var(--blue);
+    }
+
+    .btn.subtle {
+      width: 40px;
+      padding: 0;
+    }
+
+    .btn.danger {
+      color: #fff;
+      background: var(--red);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .select-row:hover,
+      .row:has(input:focus-visible),
+      .seg-option:hover,
+      .btn:hover {
+        background-color: rgba(118, 118, 128, 0.20);
+      }
+
+      .btn.primary:hover {
+        background-color: #0A84FF;
+      }
+    }
+
+    :focus-visible {
+      outline: 3px solid rgba(0, 122, 255, 0.42);
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 1019px) {
+      .shell,
+      .action-align {
+        width: min(560px, calc(100vw - 32px));
+      }
+
+      .layout {
+        display: block;
+      }
+
+      .left-rail,
+      .right-rail {
+        display: contents;
+      }
+
+      .hero,
+      .warning-box,
+      .group {
+        margin-bottom: 16px;
+      }
+    }
+
+    @media (max-width: 599px) {
+      .shell {
+        width: 100%;
+        padding: 14px 12px 132px;
+      }
+
+      .action-align {
+        width: 100%;
+      }
+
+      .nav {
+        top: 8px;
+        margin-bottom: 18px;
+      }
+
+      .brand p,
+      .status-pill {
+        display: none;
+      }
+
+      .hero h2 {
+        font-size: 30px;
+      }
+
+      .model-segment {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .row {
+        gap: 10px;
+      }
+
+      .toolbar {
+        gap: 8px;
+      }
+
+      .toolbar-status {
+        display: none;
+      }
+
+      .btn {
+        min-width: 40px;
+        padding: 0 11px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <nav class="nav glass" id="nav">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M6.5 14.5c2.6-2.2 8.4-2.2 11 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M9 17c1.5-1.2 4.5-1.2 6 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M12 20h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+            <path d="M4 11.5c4.2-3.7 11.8-3.7 16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Shairport Sync</h1>
+          <p>UGREEN NAS AirPlay 2</p>
+        </div>
+      </div>
+      <div class="status-pill"><span class="dot"></span><span id="statusShort">读取中</span></div>
+    </nav>
+
+    <section class="layout">
+      <aside class="left-rail">
+        <section class="hero glass">
+          <h2 id="deviceTitle">UGREEN AirPlay</h2>
+          <p>保存后会写入完整配置、更新机型标识，并重启接收端让 AirPlay 广播重新发布。</p>
+          <div class="summary-list">
+            <div class="summary-item"><span>当前图标</span><span id="modelSummary">-</span></div>
+            <div class="summary-item"><span>广播网口</span><span id="interfaceSummary">-</span></div>
+            <div class="summary-item"><span>音频输出</span><span id="audioSummary">-</span></div>
+          </div>
+        </section>
+
+        <section class="warning-box" id="warnings"></section>
+      </aside>
+
+      <div class="right-rail">
+        <section class="group glass">
+          <div class="group-head"><h3>设备</h3></div>
+          <div class="group-body">
+            <label class="row">
+              <span class="row-label">名称</span>
+              <span class="row-control"><input class="text-input" id="name" maxlength="50" autocomplete="off"></span>
+            </label>
+            <div class="row">
+              <span class="row-label">图标</span>
+              <span class="row-control"><div class="model-segment" id="modelSegment"></div></span>
+            </div>
+          </div>
+          <p class="note">这是机型标识伪装，只影响 Apple 客户端选择图标；不会获得 Siri、HomePod 立体声组队、设为 Apple TV 默认输出等能力。连接后图标偶尔退回通用扬声器属于 iOS 端行为。</p>
+        </section>
+
+        <section class="group glass">
+          <div class="group-head"><h3>网络</h3></div>
+          <div class="group-body">
+            <label class="row select-row">
+              <span class="row-label">广播网口</span>
+              <span class="row-control"><span class="select-value" id="interfaceValue">未选择</span><span class="chevron"></span></span>
+              <select class="native-select" id="interface"></select>
+            </label>
+          </div>
+          <p class="note">多网口 NAS 必须选实际接线的网口。未指定时 avahi 会在所有网口广播，Apple 设备可能连到错误地址。</p>
+        </section>
+
+        <section class="group glass">
+          <div class="group-head"><h3>音频</h3></div>
+          <div class="group-body">
+            <label class="row select-row">
+              <span class="row-label">输出设备</span>
+              <span class="row-control"><span class="select-value" id="audioValue">default</span><span class="chevron"></span></span>
+              <select class="native-select" id="audio_device"></select>
+            </label>
+            <label class="row select-row">
+              <span class="row-label">硬件音量</span>
+              <span class="row-control"><span class="select-value" id="mixerValue">不使用</span><span class="chevron"></span></span>
+              <select class="native-select" id="mixer_control_name"></select>
+            </label>
+            <div class="row">
+              <span class="row-label">音量</span>
+              <span class="row-control">
+                <span class="range-wrap">
+                  <input type="range" min="0" max="100" step="1" id="volume_percent">
+                  <span class="range-value" id="volumeValue">70%</span>
+                </span>
+              </span>
+            </div>
+            <label class="row">
+              <span class="row-label">忽略 iOS 音量</span>
+              <span class="row-control">
+                <span class="switch">
+                  <input type="checkbox" id="ignore_volume_control">
+                  <span class="switch-track"></span>
+                </span>
+              </span>
+            </label>
+          </div>
+          <p class="note">USB DAC 会显示为 ALSA 播放设备；HDMI 音频只有在 HDMI 端真正接入显示器、功放或采集设备后才会出现。硬件音量需要选择实际存在的 Mixer 控件。</p>
+        </section>
+
+        <section class="group glass">
+          <div class="group-head"><h3>高级</h3></div>
+          <div class="group-body">
+            <label class="row">
+              <span class="row-label">音量范围 dB</span>
+              <span class="row-control"><input class="number-input" type="number" min="30" max="150" step="1" id="volume_range_db"></span>
+            </label>
+            <label class="row">
+              <span class="row-label">最大音量 dB</span>
+              <span class="row-control"><input class="number-input" type="number" max="0" step="0.5" id="volume_max_db"></span>
+            </label>
+          </div>
+          <p class="note">保存时会把范围收敛到 shairport-sync 可启动的合法值：`volume_range_db` 为 30-150，`volume_max_db` 不高于 0。</p>
+        </section>
+
+        <section class="group glass">
+          <div class="group-head"><h3>附加配置</h3></div>
+          <div class="group-body">
+            <div class="row" style="align-items: stretch;">
+              <textarea id="additional_config" spellcheck="false" placeholder="mqtt = { ... };&#10;dsp = { ... };"></textarea>
+            </div>
+          </div>
+          <p class="note">这里的内容会原样追加到生成文件末尾，适合 mqtt、dsp 等 shairport-sync 高级段落。</p>
+        </section>
+
+        <section class="group glass">
+          <div class="group-head"><h3>预览与日志</h3></div>
+          <pre class="code-box" id="previewBox">配置预览会显示在这里。</pre>
+          <pre class="code-box" id="logsBox">容器日志会显示在这里。</pre>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <div class="action-shell">
+    <div class="action-align">
+      <div class="toolbar">
+        <div class="toolbar-status" id="toolbarStatus">未保存</div>
+        <button class="btn subtle" id="refreshBtn" title="刷新">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="btn" id="previewBtn">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M5 4h14v16H5z" stroke="currentColor" stroke-width="2"/><path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          预览
+        </button>
+        <button class="btn" id="restartBtn">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 4v8M7.05 7.05a7 7 0 1 0 9.9 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          重启
+        </button>
+        <button class="btn primary" id="saveBtn">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M7 21v-8h10v8M7 3v5h8" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+          保存并重启
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const api = async (path, options = {}) => {
+      const response = await fetch(path, {
+        headers: { "Content-Type": "application/json" },
+        ...options
+      });
+      if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+      return response.json();
+    };
+
+    let currentState = null;
+    let selectedModel = "AirPort10,115";
+
+    const icon = {
+      "ShairportSync": ["通用", "扬声器"],
+      "AirPort10,115": ["AirPort", "推荐"],
+      "AudioAccessory5,1": ["mini", "HomePod"],
+      "AudioAccessory1,2": ["一代", "HomePod"],
+      "AudioAccessory6,1": ["二代", "HomePod"],
+      "AppleTV6,2": ["TV 4K", "Apple TV"]
+    };
+
+    function setStatus(text, ok = true) {
+      $("toolbarStatus").textContent = text;
+      $("statusShort").textContent = ok ? "就绪" : "注意";
+    }
+
+    function optionLabel(select, value) {
+      const found = [...select.options].find((option) => option.value === value);
+      return found ? found.textContent : (value || "未选择");
+    }
+
+    function updateRangeFill() {
+      const range = $("volume_percent");
+      const value = Number(range.value || 0);
+      range.style.setProperty("--range-fill", `${value}%`);
+      $("volumeValue").textContent = `${value}%`;
+    }
+
+    function formSettings() {
+      return {
+        name: $("name").value,
+        model: selectedModel,
+        interface: $("interface").value,
+        audio_device: $("audio_device").value,
+        mixer_control_name: $("mixer_control_name").value,
+        volume_percent: Number($("volume_percent").value),
+        volume_range_db: Number($("volume_range_db").value),
+        volume_max_db: Number($("volume_max_db").value),
+        ignore_volume_control: $("ignore_volume_control").checked ? "yes" : "no",
+        additional_config: $("additional_config").value
+      };
+    }
+
+    function renderModelSegment(models) {
+      const segment = $("modelSegment");
+      segment.innerHTML = "";
+      models.forEach((model) => {
+        const parts = icon[model.id] || [model.label, model.id];
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `seg-option${model.id === selectedModel ? " active" : ""}`;
+        button.dataset.model = model.id;
+        button.innerHTML = `<strong>${parts[0]}</strong><span>${parts[1]}</span>`;
+        button.title = `${model.label} · ${model.id}`;
+        button.addEventListener("click", () => {
+          selectedModel = model.id;
+          renderModelSegment(currentState.models);
+          updateSummaries();
+        });
+        segment.appendChild(button);
+      });
+    }
+
+    function renderSelect(select, options, value, emptyLabel) {
+      select.innerHTML = "";
+      if (emptyLabel) {
+        const empty = document.createElement("option");
+        empty.value = "";
+        empty.textContent = emptyLabel;
+        select.appendChild(empty);
+      }
+      options.forEach((item) => {
+        const option = document.createElement("option");
+        option.value = item.id || item.name || item;
+        option.textContent = item.label || item.name || item;
+        select.appendChild(option);
+      });
+      select.value = value || "";
+    }
+
+    function renderWarnings(warnings) {
+      const box = $("warnings");
+      if (!warnings || warnings.length === 0) {
+        box.classList.remove("visible");
+        box.textContent = "";
+        return;
+      }
+      box.classList.add("visible");
+      box.textContent = warnings.join(" ");
+    }
+
+    function updateSummaries() {
+      const model = (currentState?.models || []).find((item) => item.id === selectedModel);
+      $("deviceTitle").textContent = $("name").value || "UGREEN AirPlay";
+      $("modelSummary").textContent = model ? `${model.label} · ${model.id}` : selectedModel;
+      $("interfaceSummary").textContent = optionLabel($("interface"), $("interface").value);
+      $("audioSummary").textContent = optionLabel($("audio_device"), $("audio_device").value);
+      $("interfaceValue").textContent = optionLabel($("interface"), $("interface").value);
+      $("audioValue").textContent = optionLabel($("audio_device"), $("audio_device").value);
+      $("mixerValue").textContent = optionLabel($("mixer_control_name"), $("mixer_control_name").value) || "不使用";
+    }
+
+    async function refreshState() {
+      currentState = await api("/api/state");
+      const settings = currentState.settings;
+      selectedModel = settings.model;
+
+      $("name").value = settings.name;
+      $("volume_percent").value = settings.volume_percent;
+      $("volume_range_db").value = settings.volume_range_db;
+      $("volume_max_db").value = settings.volume_max_db;
+      $("ignore_volume_control").checked = settings.ignore_volume_control === "yes";
+      $("additional_config").value = settings.additional_config || "";
+
+      const ifaceOptions = currentState.interfaces.map((iface) => ({
+        id: iface.name,
+        label: `${iface.name} · ${iface.operstate}${iface.speed ? ` · ${iface.speed}M` : ""}`
+      }));
+      renderSelect($("interface"), ifaceOptions, settings.interface, "未选择");
+      renderSelect($("audio_device"), currentState.audio_devices, settings.audio_device);
+      renderSelect($("mixer_control_name"), currentState.mixer_controls, settings.mixer_control_name, "不使用");
+      renderModelSegment(currentState.models);
+      renderWarnings(currentState.warnings);
+
+      $("previewBox").textContent = currentState.config || "尚未生成配置。";
+      await refreshLogs(false);
+      updateRangeFill();
+      updateSummaries();
+      setStatus("已读取当前配置");
+    }
+
+    async function refreshMixers() {
+      const result = await api(`/api/mixers?device=${encodeURIComponent($("audio_device").value)}`);
+      renderSelect($("mixer_control_name"), result.mixer_controls, "", "不使用");
+      updateSummaries();
+    }
+
+    async function previewConfig() {
+      const result = await api("/api/preview", {
+        method: "POST",
+        body: JSON.stringify(formSettings())
+      });
+      $("previewBox").textContent = result.config;
+      renderWarnings(result.warnings);
+      setStatus("配置预览已更新");
+    }
+
+    async function saveAndRestart() {
+      setStatus("正在保存并重启");
+      const result = await api("/api/save", {
+        method: "POST",
+        body: JSON.stringify({ ...formSettings(), restart: true })
+      });
+      $("previewBox").textContent = result.config;
+      renderWarnings(result.warnings);
+      await refreshLogs(false);
+      setStatus(result.restart?.ok ? "已保存并重启" : "已保存，重启结果见日志", Boolean(result.restart?.ok));
+    }
+
+    async function restartOnly() {
+      setStatus("正在重启接收端");
+      const result = await api("/api/restart", { method: "POST", body: "{}" });
+      await refreshLogs(false);
+      setStatus(result.ok ? "接收端已重启" : `重启失败：${result.error || "未知错误"}`, Boolean(result.ok));
+    }
+
+    async function refreshLogs(updateStatus = true) {
+      const result = await api("/api/logs?lines=140");
+      $("logsBox").textContent = result.ok ? (result.logs || "暂无日志。") : `读取日志失败：${result.error}`;
+      if (updateStatus) setStatus(result.ok ? "日志已刷新" : "日志读取失败", Boolean(result.ok));
+    }
+
+    async function applyVolume() {
+      updateRangeFill();
+      const result = await api("/api/volume", {
+        method: "POST",
+        body: JSON.stringify(formSettings())
+      });
+      setStatus(result.ok ? "硬件音量已更新" : `音量未应用：${result.error || "检查 Mixer 控件"}`, Boolean(result.ok));
+    }
+
+    ["name", "interface", "audio_device", "mixer_control_name", "volume_range_db", "volume_max_db", "ignore_volume_control", "additional_config"].forEach((id) => {
+      $(id).addEventListener("input", updateSummaries);
+      $(id).addEventListener("change", updateSummaries);
+    });
+
+    $("audio_device").addEventListener("change", refreshMixers);
+    $("volume_percent").addEventListener("input", updateRangeFill);
+    $("volume_percent").addEventListener("change", applyVolume);
+    $("previewBtn").addEventListener("click", previewConfig);
+    $("saveBtn").addEventListener("click", saveAndRestart);
+    $("restartBtn").addEventListener("click", restartOnly);
+    $("refreshBtn").addEventListener("click", refreshState);
+
+    window.addEventListener("scroll", () => {
+      $("nav").classList.toggle("scrolled", window.scrollY > 24);
+    }, { passive: true });
+
+    refreshState().catch((error) => {
+      setStatus(`读取失败：${error.message}`, false);
+      $("previewBox").textContent = String(error.stack || error.message || error);
+    });
+  </script>
+</body>
+</html>

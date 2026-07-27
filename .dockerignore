@@ -1,0 +1,12 @@
+.git
+.DS_Store
+sources/
+config/
+data/
+**/__pycache__/
+**/.pytest_cache/
+**/*.pyc
+**/*.pyo
+**/*.bak
+**/*.tmp
+

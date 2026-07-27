@@ -1,0 +1,140 @@
+name: Build and publish Docker images
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - "v*"
+  pull_request:
+  workflow_dispatch:
+
+env:
+  AIRPLAY_IMAGE: shairport-sync-airplay2
+  WEBUI_IMAGE: shairport-sync-webui
+
+jobs:
+  test:
+    name: Test configuration generator
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install WebUI dependencies
+        run: python -m pip install -r webui/requirements.txt PyYAML
+
+      - name: Run configuration tests
+        run: PYTHONPATH=webui pytest webui/test_conf.py
+
+      - name: Validate compose YAML
+        run: |
+          python - <<'PY'
+          import yaml
+          from pathlib import Path
+
+          for name in ("docker-compose.yml", "docker-compose.published.yml"):
+              data = yaml.safe_load(Path(name).read_text())
+              service = data["services"]["shairport-sync"]
+              assert service["network_mode"] == "host"
+              assert "SYS_NICE" in service["cap_add"]
+              assert "/dev/snd:/dev/snd" in service["devices"]
+          PY
+
+      - name: Verify upstream shairport-sync model patch still applies
+        run: |
+          set -eux
+          curl -fsSL https://raw.githubusercontent.com/mikebrady/shairport-sync/master/shairport.c -o /tmp/shairport.c
+          grep -n 'config.model = strdup("ShairportSync")' /tmp/shairport.c || {
+            echo "SPS_MODEL patch target not found. Actual config.model lines:" >&2
+            grep -n 'config\.model' /tmp/shairport.c >&2 || true
+            exit 1
+          }
+          sed -i 's|config\.model = strdup("ShairportSync");|{ const char *_sps_m = getenv("SPS_MODEL");\n  config.model = strdup((_sps_m \&\& *_sps_m) ? _sps_m : "ShairportSync"); }|' /tmp/shairport.c
+          grep -n 'getenv("SPS_MODEL")' /tmp/shairport.c || {
+            echo "SPS_MODEL patch self-check failed. Actual config.model lines:" >&2
+            grep -n 'config\.model' /tmp/shairport.c >&2 || true
+            exit 1
+          }
+
+  docker:
+    name: Build and publish images
+    runs-on: ubuntu-latest
+    needs: test
+    env:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      DOCKERHUB_NAMESPACE: ${{ secrets.DOCKERHUB_NAMESPACE }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Resolve Docker Hub namespace
+        id: names
+        run: |
+          set -eu
+          namespace="${DOCKERHUB_NAMESPACE:-$DOCKERHUB_USERNAME}"
+          if [ -z "$namespace" ]; then
+            namespace="local"
+          fi
+          echo "namespace=$namespace" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to Docker Hub
+        if: ${{ github.event_name != 'pull_request' && env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != '' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ env.DOCKERHUB_TOKEN }}
+
+      - name: Metadata for shairport-sync image
+        id: airplay_meta
+        uses: docker/metadata-action@v5
+        with:
+          images: docker.io/${{ steps.names.outputs.namespace }}/${{ env.AIRPLAY_IMAGE }}
+          tags: |
+            type=raw,value=latest,enable=${{ github.ref_name == 'main' || github.ref_name == 'master' }}
+            type=sha,prefix=
+            type=ref,event=tag
+
+      - name: Metadata for WebUI image
+        id: webui_meta
+        uses: docker/metadata-action@v5
+        with:
+          images: docker.io/${{ steps.names.outputs.namespace }}/${{ env.WEBUI_IMAGE }}
+          tags: |
+            type=raw,value=latest,enable=${{ github.ref_name == 'main' || github.ref_name == 'master' }}
+            type=sha,prefix=
+            type=ref,event=tag
+
+      - name: Build shairport-sync image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: build/Dockerfile
+          platforms: linux/amd64
+          push: ${{ github.event_name != 'pull_request' && env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != '' }}
+          tags: ${{ steps.airplay_meta.outputs.tags }}
+          labels: ${{ steps.airplay_meta.outputs.labels }}
+          build-args: |
+            SHAIRPORT_SYNC_REF=master
+            NQPTP_REF=main
+            RAOP_AM_MODEL=
+
+      - name: Build WebUI image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./webui
+          file: ./webui/Dockerfile
+          platforms: linux/amd64
+          push: ${{ github.event_name != 'pull_request' && env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != '' }}
+          tags: ${{ steps.webui_meta.outputs.tags }}
+          labels: ${{ steps.webui_meta.outputs.labels }}

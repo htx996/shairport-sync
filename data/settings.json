@@ -1,0 +1,13 @@
+{
+  "name": "UGREEN AirPlay",
+  "model": "AirPort10,115",
+  "interface": "",
+  "audio_device": "default",
+  "mixer_control_name": "",
+  "volume_percent": 70,
+  "volume_range_db": 60,
+  "volume_max_db": 0.0,
+  "ignore_volume_control": "no",
+  "additional_config": ""
+}
+

@@ -1,0 +1,15 @@
+This is an unofficial container build and WebUI for shairport-sync.
+
+It is not affiliated with Mike Brady, the shairport-sync project, Apple, UGREEN, or any Apple audio product.
+
+The shairport-sync source is MIT licensed. Keep the upstream copyright and permission notice when redistributing modified binaries or source.
+
+Local modification:
+
+- In shairport.c, the hard-coded line:
+  config.model = strdup("ShairportSync");
+  is replaced during Docker build with:
+  { const char *_sps_m = getenv("SPS_MODEL");
+    config.model = strdup((_sps_m && *_sps_m) ? _sps_m : "ShairportSync"); }
+
+This only changes the advertised model identifier used by Apple clients to choose an icon. It does not make the receiver a real HomePod, AirPort Express, or Apple TV, and it does not add Siri, HomePod stereo pairing, Apple TV default-output integration, or other Apple-only capabilities.

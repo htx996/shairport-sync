@@ -1,0 +1,41 @@
+name: shairport-sync-panel
+
+services:
+  shairport-sync:
+    image: docker.io/${DOCKERHUB_NAMESPACE:-REPLACE_ME}/shairport-sync-airplay2:latest
+    container_name: shairport-sync
+    platform: linux/amd64
+    network_mode: host
+    restart: unless-stopped
+    cap_add:
+      - SYS_NICE
+    devices:
+      - /dev/snd:/dev/snd
+    volumes:
+      - ./config:/config
+      - /var/run/dbus:/var/run/dbus
+      - /var/run/avahi-daemon/socket:/var/run/avahi-daemon/socket
+    logging:
+      options:
+        max-size: "500k"
+        max-file: "5"
+
+  webui:
+    image: docker.io/${DOCKERHUB_NAMESPACE:-REPLACE_ME}/shairport-sync-webui:latest
+    container_name: shairport-sync-webui
+    platform: linux/amd64
+    network_mode: host
+    restart: unless-stopped
+    devices:
+      - /dev/snd:/dev/snd
+    volumes:
+      - ./config:/config
+      - ./data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      SHAIRPORT_CONTAINER: shairport-sync
+      PANEL_HOST: 0.0.0.0
+      PANEL_PORT: "8080"
+      # PANEL_PASSWORD: "change-me"
+    depends_on:
+      - shairport-sync

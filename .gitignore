@@ -1,0 +1,7 @@
+AGENTS.md
+sources/
+__pycache__/
+.pytest_cache/
+*.pyc
+*.pyo
+.DS_Store
