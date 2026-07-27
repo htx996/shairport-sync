@@ -275,7 +275,7 @@ def write_config(settings: dict[str, Any]) -> None:
 def read_text_file(path: Path) -> str:
     try:
         return path.read_text(encoding="utf-8", errors="replace")
-    except FileNotFoundError:
+    except (FileNotFoundError, OSError):
         return ""
 
 

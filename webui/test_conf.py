@@ -1,6 +1,7 @@
 import re
+from pathlib import Path
 
-from app import DEFAULTS, escape_libconfig_string, generate_config, normalize_settings
+from app import DEFAULTS, escape_libconfig_string, generate_config, normalize_settings, read_text_file
 
 
 def top_level_general_count(config_text):
@@ -88,3 +89,12 @@ def test_empty_strings_use_safe_defaults():
 
 def test_escape_libconfig_string_handles_backslash_before_quote():
     assert escape_libconfig_string(r'bad \" name') == r"bad \\\" name"
+
+
+def test_read_text_file_tolerates_sysfs_read_errors(monkeypatch):
+    def raise_oserror(*args, **kwargs):
+        raise OSError("Invalid argument")
+
+    monkeypatch.setattr(Path, "read_text", raise_oserror)
+
+    assert read_text_file(Path("/sys/class/net/eth0/speed")) == ""
