@@ -11,8 +11,8 @@ on:
   workflow_dispatch:
 
 env:
-  AIRPLAY_IMAGE: shairport-sync-airplay2
-  WEBUI_IMAGE: shairport-sync-webui
+  AIRPLAY_IMAGE: airplay
+  WEBUI_IMAGE: airplay-panel
 
 jobs:
   test:

@@ -54,8 +54,8 @@ PANEL_PASSWORD: "换成强密码"
 `docker-compose.published.yml` 默认使用 Docker Hub 镜像名：
 
 ```yaml
-docker.io/${DOCKERHUB_NAMESPACE:-hanfu1997}/shairport-sync-airplay2:latest
-docker.io/${DOCKERHUB_NAMESPACE:-hanfu1997}/shairport-sync-webui:latest
+docker.io/${DOCKERHUB_NAMESPACE:-hanfu1997}/airplay:latest
+docker.io/${DOCKERHUB_NAMESPACE:-hanfu1997}/airplay-panel:latest
 ```
 
 发布到 Docker Hub 后可直接运行；如果以后换 namespace，再覆盖 `DOCKERHUB_NAMESPACE`：
@@ -99,10 +99,10 @@ DOCKERHUB_NAMESPACE=镜像 namespace，可选；不填时使用 DOCKERHUB_USERNA
 推送后的镜像名：
 
 ```text
-docker.io/hanfu1997/shairport-sync-airplay2:latest
-docker.io/hanfu1997/shairport-sync-webui:latest
-docker.io/hanfu1997/shairport-sync-airplay2:<commit-sha>
-docker.io/hanfu1997/shairport-sync-webui:<commit-sha>
+docker.io/hanfu1997/airplay:latest
+docker.io/hanfu1997/airplay-panel:latest
+docker.io/hanfu1997/airplay:<commit-sha>
+docker.io/hanfu1997/airplay-panel:<commit-sha>
 ```
 
 ## 图标机制和限制
