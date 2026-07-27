@@ -25,6 +25,11 @@ CONF_PATH = CONFIG_DIR / "shairport-sync.conf"
 MODEL_ENV_PATH = CONFIG_DIR / "model.env"
 SETTINGS_PATH = DATA_DIR / "settings.json"
 CONTAINER_NAME = os.environ.get("SHAIRPORT_CONTAINER", "shairport-sync")
+AIRPLAY_IMAGE_HINTS = tuple(
+    item.strip().lower()
+    for item in os.environ.get("SHAIRPORT_IMAGE_HINTS", "hanfu1997/airplay").split(",")
+    if item.strip()
+)
 PANEL_HOST = os.environ.get("PANEL_HOST", "0.0.0.0")
 PANEL_PORT = int(os.environ.get("PANEL_PORT", "8099"))
 
@@ -394,14 +399,106 @@ def build_warnings(settings: dict[str, Any], interfaces: list[dict[str, Any]], a
     return warnings
 
 
+def docker_container_name(container: Any) -> str:
+    return str(getattr(container, "name", "") or "").lstrip("/")
+
+
+def docker_container_labels(container: Any) -> dict[str, str]:
+    labels = getattr(container, "labels", None)
+    if isinstance(labels, dict):
+        return {str(key): str(value) for key, value in labels.items()}
+    attrs = getattr(container, "attrs", {}) or {}
+    config = attrs.get("Config", {}) if isinstance(attrs, dict) else {}
+    labels = config.get("Labels", {}) if isinstance(config, dict) else {}
+    return {str(key): str(value) for key, value in (labels or {}).items()}
+
+
+def docker_container_image_refs(container: Any) -> list[str]:
+    refs: list[str] = []
+    image = getattr(container, "image", None)
+    tags = getattr(image, "tags", None)
+    if tags:
+        refs.extend(str(tag) for tag in tags)
+    attrs = getattr(container, "attrs", {}) or {}
+    config = attrs.get("Config", {}) if isinstance(attrs, dict) else {}
+    image_ref = config.get("Image") if isinstance(config, dict) else None
+    if image_ref:
+        refs.append(str(image_ref))
+    return list(dict.fromkeys(refs))
+
+
+def shairport_container_score(container: Any) -> int:
+    name = docker_container_name(container).lower()
+    labels = docker_container_labels(container)
+    service = labels.get("com.docker.compose.service", "").lower()
+    image_refs = [ref.lower() for ref in docker_container_image_refs(container)]
+    if service == "webui" or "webui" in name:
+        return -1
+    if any("airplay-panel" in ref or "webui" in ref for ref in image_refs):
+        return -1
+
+    score = 0
+    if service == "shairport-sync":
+        score += 100
+    if any(hint in ref for hint in AIRPLAY_IMAGE_HINTS for ref in image_refs):
+        score += 80
+    if name == CONTAINER_NAME.lower() or name.endswith(f"-{CONTAINER_NAME.lower()}-1"):
+        score += 50
+    if getattr(container, "status", "") == "running":
+        score += 10
+    return score
+
+
+def choose_shairport_container(containers: list[Any]) -> Any | None:
+    scored = [
+        (shairport_container_score(container), docker_container_name(container), container)
+        for container in containers
+    ]
+    candidates = [item for item in scored if item[0] > 0]
+    if not candidates:
+        return None
+    candidates.sort(key=lambda item: (-item[0], item[1]))
+    return candidates[0][2]
+
+
+def resolve_shairport_container(client: Any) -> tuple[Any | None, dict[str, Any]]:
+    try:
+        return client.containers.get(CONTAINER_NAME), {
+            "configured_container": CONTAINER_NAME,
+            "container": CONTAINER_NAME,
+            "resolved_by": "configured name",
+        }
+    except Exception as direct_exc:  # pragma: no cover - depends on host Docker state.
+        try:
+            containers = client.containers.list(all=True)
+        except Exception as list_exc:  # pragma: no cover - depends on host Docker state.
+            return None, {"error": f"{direct_exc}; also failed to list containers: {list_exc}"}
+
+    container = choose_shairport_container(containers)
+    if container is None:
+        names = ", ".join(docker_container_name(item) for item in containers[:20])
+        return None, {
+            "error": f"No such container: {CONTAINER_NAME}. Visible containers: {names or '(none)'}",
+            "configured_container": CONTAINER_NAME,
+        }
+
+    return container, {
+        "configured_container": CONTAINER_NAME,
+        "container": docker_container_name(container),
+        "resolved_by": "auto discovery",
+    }
+
+
 def restart_shairport() -> dict[str, Any]:
     if docker is None:
         return {"ok": False, "error": "Docker SDK is not installed in the WebUI container."}
     try:
         client = docker.from_env()
-        container = client.containers.get(CONTAINER_NAME)
+        container, target = resolve_shairport_container(client)
+        if container is None:
+            return {"ok": False, **target}
         container.restart(timeout=int(os.environ.get("RESTART_TIMEOUT", "10")))
-        return {"ok": True, "container": CONTAINER_NAME}
+        return {"ok": True, **target}
     except Exception as exc:  # pragma: no cover - depends on host Docker state.
         return {"ok": False, "error": str(exc)}
 
@@ -411,9 +508,11 @@ def read_container_logs(lines: int = 120) -> dict[str, Any]:
         return {"ok": False, "logs": "", "error": "Docker SDK is not installed in the WebUI container."}
     try:
         client = docker.from_env()
-        container = client.containers.get(CONTAINER_NAME)
+        container, target = resolve_shairport_container(client)
+        if container is None:
+            return {"ok": False, "logs": "", **target}
         output = container.logs(tail=max(20, min(lines, 500)), timestamps=True)
-        return {"ok": True, "logs": output.decode("utf-8", errors="replace")}
+        return {"ok": True, "logs": output.decode("utf-8", errors="replace"), **target}
     except Exception as exc:  # pragma: no cover - depends on host Docker state.
         return {"ok": False, "logs": "", "error": str(exc)}
 

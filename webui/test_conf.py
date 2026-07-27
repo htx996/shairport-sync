@@ -1,7 +1,15 @@
 import re
 from pathlib import Path
+from types import SimpleNamespace
 
-from app import DEFAULTS, escape_libconfig_string, generate_config, normalize_settings, read_text_file
+from app import (
+    DEFAULTS,
+    choose_shairport_container,
+    escape_libconfig_string,
+    generate_config,
+    normalize_settings,
+    read_text_file,
+)
 
 
 def top_level_general_count(config_text):
@@ -98,3 +106,40 @@ def test_read_text_file_tolerates_sysfs_read_errors(monkeypatch):
     monkeypatch.setattr(Path, "read_text", raise_oserror)
 
     assert read_text_file(Path("/sys/class/net/eth0/speed")) == ""
+
+
+def fake_container(name, image, service="", status="running"):
+    labels = {}
+    if service:
+        labels["com.docker.compose.service"] = service
+    return SimpleNamespace(
+        name=name,
+        status=status,
+        labels=labels,
+        image=SimpleNamespace(tags=[image]),
+        attrs={"Config": {"Image": image, "Labels": labels}},
+    )
+
+
+def test_container_discovery_prefers_receiver_over_panel():
+    receiver = fake_container(
+        "airplay-shairport-sync-1",
+        "docker.io/hanfu1997/airplay:latest",
+        "shairport-sync",
+    )
+    panel = fake_container(
+        "airplay-webui-1",
+        "docker.io/hanfu1997/airplay-panel:latest",
+        "webui",
+    )
+
+    assert choose_shairport_container([panel, receiver]) is receiver
+
+
+def test_container_discovery_uses_image_when_name_is_rewritten():
+    receiver = fake_container(
+        "airplay-panel-shairport-sync-1",
+        "hanfu1997/airplay:latest",
+    )
+
+    assert choose_shairport_container([receiver]) is receiver
