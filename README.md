@@ -36,11 +36,13 @@
 docker compose up -d --build
 ```
 
-面板默认监听宿主机 `8080`：
+面板默认监听宿主机 `8099`：
 
 ```text
-http://NAS_IP:8080
+http://NAS_IP:8099
 ```
+
+首次启动时如果 `config/` 是空目录，AirPlay 容器会自动写入一个可启动的默认 `shairport-sync.conf` 和 `model.env`。进面板后再选择实际网口、音频输出和图标，保存并重启生效。
 
 如果要启用 HTTP Basic 认证，在 `docker-compose.yml` 的 `webui.environment` 里设置：
 

@@ -26,7 +26,7 @@ MODEL_ENV_PATH = CONFIG_DIR / "model.env"
 SETTINGS_PATH = DATA_DIR / "settings.json"
 CONTAINER_NAME = os.environ.get("SHAIRPORT_CONTAINER", "shairport-sync")
 PANEL_HOST = os.environ.get("PANEL_HOST", "0.0.0.0")
-PANEL_PORT = int(os.environ.get("PANEL_PORT", "8080"))
+PANEL_PORT = int(os.environ.get("PANEL_PORT", "8099"))
 
 MODELS = [
     {
