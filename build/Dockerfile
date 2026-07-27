@@ -30,6 +30,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       libssl-dev \
       libsoxr-dev \
       libplist-dev \
+      libplist-utils \
       libsodium-dev \
       uuid-dev \
       libgcrypt20-dev \
