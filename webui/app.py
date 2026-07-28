@@ -68,7 +68,7 @@ MODELS = [
 MODEL_IDS = {item["id"] for item in MODELS}
 
 DEFAULTS: dict[str, Any] = {
-    "name": "UGREEN AirPlay",
+    "name": "AirPlay",
     "model": "AirPort10,115",
     "interface": "",
     "audio_device": "default",

@@ -150,18 +150,6 @@
       }
     }
 
-    body::after {
-      content: "";
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 35;
-      height: 178px;
-      pointer-events: none;
-      background: linear-gradient(180deg, rgba(242, 242, 247, 0), color-mix(in srgb, var(--bg), transparent 4%) 74%);
-    }
-
     button,
     input,
     select,
@@ -196,7 +184,7 @@
       z-index: 1;
       width: min(var(--page-max), calc(100% - 56px));
       margin: 0 auto;
-      padding: 26px 0 140px;
+      padding: 26px 0 24px;
     }
 
     .view[hidden] {
@@ -1175,126 +1163,10 @@
       font: 13px/1.48 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     }
 
-    .panel-tabs {
-      display: inline-grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 4px;
-      padding: 4px;
-      border-radius: 18px;
-      background: var(--fill);
-    }
-
-    .panel-tab {
-      min-height: 34px;
-      padding: 0 14px;
-      border-radius: 14px;
-      background: transparent;
-      color: var(--secondary);
-      font-size: 14px;
-      font-weight: 780;
-      transition:
-        transform 150ms var(--ease-spring),
-        color 180ms ease,
-        background-color 180ms ease,
-        box-shadow 180ms ease;
-    }
-
-    .panel-tab.active {
-      color: var(--label);
-      background: color-mix(in srgb, var(--glass-heavy), transparent 10%);
-      box-shadow: 0 6px 16px var(--shadow-soft), inset 0 1px 0 var(--inner-edge);
-    }
-
-    .code-pane {
-      display: none;
-      margin-top: 14px;
-    }
-
-    .code-pane.active {
-      display: block;
-      animation: sheet-in 230ms var(--ease-spring);
-    }
-
-    @keyframes sheet-in {
-      0% { opacity: 0; transform: translateY(8px) scale(0.985); }
-      72% { opacity: 1; transform: translateY(-1px) scale(1.003); }
-      100% { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
-    .code-box {
-      min-height: 210px;
-      max-height: 380px;
-      margin: 0;
-      padding: 16px;
-      overflow: auto;
-      border-radius: var(--radius-inner);
-      background: color-mix(in srgb, var(--fill), transparent 10%);
-      border: 1px solid color-mix(in srgb, var(--edge), transparent 62%);
-      color: var(--label);
-      font: 13px/1.48 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-    }
-
-    .preview-view {
-      margin-top: 26px;
-    }
-
-    .preview-page-card {
-      min-height: min(720px, calc(100vh - var(--nav-h) - 110px));
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .preview-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 16px;
-    }
-
-    .preview-title {
-      min-width: 0;
-    }
-
-    .preview-title h2 {
-      margin: 0;
-      font-size: clamp(28px, 4vw, 42px);
-      line-height: 1.05;
-      letter-spacing: -0.03em;
-    }
-
-    .preview-title p {
-      margin: 6px 0 0;
-      color: var(--secondary);
-      font-size: 14px;
-      font-weight: 650;
-    }
-
-    .preview-page-card .code-box {
-      min-height: 420px;
-      max-height: none;
-      height: min(58vh, 620px);
-    }
-
-    .page-link {
-      width: 100%;
-      border: 0;
-      text-align: left;
-    }
-
-    .page-link .row-control {
-      color: var(--secondary);
-    }
-
     .action-shell {
-      position: fixed;
-      z-index: 60;
-      left: 0;
-      right: 0;
-      bottom: 20px;
+      position: relative;
+      z-index: 1;
+      padding: 0 0 42px;
       pointer-events: none;
     }
 
@@ -1321,6 +1193,7 @@
     }
 
     .btn {
+      position: relative;
       min-height: 42px;
       display: inline-flex;
       align-items: center;
@@ -1350,8 +1223,27 @@
       padding: 0;
     }
 
-    .btn.preview-action {
-      padding-inline: 18px;
+    .btn.icon-only::after {
+      content: attr(aria-label);
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + 9px);
+      transform: translate(-50%, 6px);
+      padding: 6px 10px;
+      border-radius: 999px;
+      color: var(--label);
+      background: color-mix(in srgb, var(--glass-heavy), transparent 2%);
+      border: 1px solid color-mix(in srgb, var(--edge), transparent 28%);
+      box-shadow: 0 10px 24px var(--shadow-soft), inset 0 1px 0 var(--inner-edge);
+      -webkit-backdrop-filter: blur(24px) saturate(1.55);
+      backdrop-filter: blur(24px) saturate(1.55);
+      font-size: 12px;
+      font-weight: 760;
+      line-height: 1;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 140ms ease, transform 160ms var(--ease-spring);
     }
 
     .btn svg {
@@ -1384,13 +1276,18 @@
         outline: 4px solid var(--ring);
         outline-offset: 3px;
       }
+
+      .btn.icon-only:hover::after,
+      .btn.icon-only:focus-visible::after {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
     }
 
     .theme-btn:active,
     .model-card:active,
     .btn:active,
-    .row:active,
-    .panel-tab:active {
+    .row:active {
       transform: scale(0.97);
     }
 
@@ -1462,7 +1359,7 @@
 
       .app {
         width: 100%;
-        padding: 12px 12px 128px;
+        padding: 12px 12px 24px;
       }
 
       .top-controls {
@@ -1578,10 +1475,6 @@
         height: 36px;
       }
 
-      .action-shell {
-        bottom: 10px;
-      }
-
       .action-align {
         width: calc(100% - 20px);
       }
@@ -1602,23 +1495,6 @@
         width: 40px;
       }
 
-      .btn.preview-action {
-        padding-inline: 10px;
-      }
-
-      .preview-page-card {
-        min-height: calc(100vh - 92px);
-        padding: 18px;
-      }
-
-      .preview-page-card .code-box {
-        height: min(58vh, 520px);
-        min-height: 320px;
-      }
-
-      .preview-head {
-        align-items: flex-start;
-      }
     }
   </style>
 </head>
@@ -1733,40 +1609,6 @@
           <p class="note">这里的内容会原样追加到生成文件末尾，适合 mqtt、dsp 等 shairport-sync 高级段落。</p>
         </section>
 
-        <section class="settings-card liquid">
-          <div class="card-head"><h3>预览与日志</h3></div>
-          <div class="form-list">
-            <button class="row page-link" id="openPreviewPageBtn" type="button">
-              <span class="row-label">打开预览与日志</span>
-              <span class="row-control"><span class="select-value">配置预览、容器日志</span><span class="chevron"></span></span>
-            </button>
-          </div>
-        </section>
-      </section>
-    </section>
-
-    <section class="view preview-view" id="previewView" hidden>
-      <section class="settings-card liquid preview-page-card">
-        <div class="preview-head">
-          <div class="preview-title">
-            <h2>预览与日志</h2>
-            <p>查看生成配置和 shairport-sync 容器日志。</p>
-          </div>
-          <button class="btn" id="backToConfigBtn" type="button">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><path d="m12 19-7-7 7-7"></path></svg>
-            返回
-          </button>
-        </div>
-        <div class="panel-tabs" role="tablist" aria-label="预览与日志">
-          <button class="panel-tab active" type="button" id="previewTab" data-pane="previewPane" role="tab" aria-selected="true">配置预览</button>
-          <button class="panel-tab" type="button" id="logsTab" data-pane="logsPane" role="tab" aria-selected="false">容器日志</button>
-        </div>
-        <div class="code-pane active" id="previewPane" role="tabpanel" aria-labelledby="previewTab">
-          <pre class="code-box" id="previewBox">配置预览会显示在这里。</pre>
-        </div>
-        <div class="code-pane" id="logsPane" role="tabpanel" aria-labelledby="logsTab">
-          <pre class="code-box" id="logsBox">容器日志会显示在这里。</pre>
-        </div>
       </section>
     </section>
   </main>
@@ -1774,20 +1616,11 @@
   <div class="action-shell">
     <div class="action-align">
       <div class="toolbar">
-        <button class="btn icon-only" id="refreshBtn" title="刷新" aria-label="刷新" type="button">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-15.2 6.5"></path><path d="M3 12A9 9 0 0 1 18.2 5.5"></path><path d="M18 2v4h-4M6 22v-4h4"></path></svg>
-        </button>
-        <button class="btn preview-action" id="previewBtn" type="button">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-          预览与日志
-        </button>
-        <button class="btn" id="restartBtn" type="button">
+        <button class="btn icon-only" id="restartBtn" title="重启" aria-label="重启" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v10"></path><path d="M18.4 6.6a8 8 0 1 1-12.8 0"></path></svg>
-          重启
         </button>
-        <button class="btn primary" id="saveBtn" type="button">
+        <button class="btn icon-only primary" id="saveBtn" title="保存并重启" aria-label="保存并重启" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"></path><path d="M17 21v-8H7v8M7 3v5h8"></path></svg>
-          保存并重启
         </button>
       </div>
     </div>
@@ -1809,6 +1642,7 @@
     let currentState = null;
     let selectedModel = "AirPort10,115";
     let themePreference = localStorage.getItem(THEME_KEY) || "system";
+    let volumeApplyTimer = null;
 
     const modelMeta = {
       ShairportSync: {
@@ -1898,14 +1732,6 @@
       if (element) element.textContent = value;
     }
 
-    function showView(view) {
-      const preview = view === "preview";
-      $("configView").hidden = preview;
-      $("previewView").hidden = !preview;
-      document.body.dataset.view = preview ? "preview" : "config";
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-
     function updateRangeFill() {
       const range = $("volume_percent");
       const value = Number(range.value || 0);
@@ -1953,7 +1779,7 @@
       input.value = next.toFixed(decimals);
       updateDbControl(input);
       input.dispatchEvent(new Event("input", { bubbles: true }));
-      setStatus("高级音量已修改，保存后生效");
+      setStatus("高级音量已修改，保存并重启后生效");
     }
 
     function formSettings() {
@@ -2070,17 +1896,6 @@
       }
     }
 
-    function showPane(paneId) {
-      document.querySelectorAll(".panel-tab").forEach((tab) => {
-        const active = tab.dataset.pane === paneId;
-        tab.classList.toggle("active", active);
-        tab.setAttribute("aria-selected", active ? "true" : "false");
-      });
-      document.querySelectorAll(".code-pane").forEach((pane) => {
-        pane.classList.toggle("active", pane.id === paneId);
-      });
-    }
-
     async function refreshState() {
       currentState = await api("/api/state");
       const settings = currentState.settings;
@@ -2098,8 +1913,6 @@
       renderModelCards(currentState.models);
       renderWarnings(currentState.warnings);
 
-      $("previewBox").textContent = currentState.config || "尚未生成配置。";
-      await refreshLogs(false);
       updateRangeFill();
       updateDbControls();
       updateSummaries();
@@ -2112,58 +1925,41 @@
       updateSummaries();
     }
 
-    async function previewConfig(openPage = true) {
-      const result = await api("/api/preview", {
-        method: "POST",
-        body: JSON.stringify(formSettings())
-      });
-      $("previewBox").textContent = result.config;
-      renderWarnings(result.warnings);
-      if (openPage) showView("preview");
-      showPane("previewPane");
-      setStatus("配置预览已更新");
-    }
-
     async function saveAndRestart() {
       setStatus("正在保存并重启");
       const result = await api("/api/save", {
         method: "POST",
         body: JSON.stringify({ ...formSettings(), restart: true })
       });
-      $("previewBox").textContent = result.config;
       renderWarnings(result.warnings);
-      await refreshLogs(false);
-      showView("preview");
-      showPane("logsPane");
-      setStatus(result.restart?.ok ? "已保存并重启" : "已保存，重启结果见日志", Boolean(result.restart?.ok));
+      setStatus(result.restart?.ok ? "已保存并重启" : "已保存，重启失败", Boolean(result.restart?.ok));
     }
 
     async function restartOnly() {
       setStatus("正在重启接收端");
       const result = await api("/api/restart", { method: "POST", body: "{}" });
-      await refreshLogs(false);
-      showView("preview");
-      showPane("logsPane");
       setStatus(result.ok ? "接收端已重启" : `重启失败：${result.error || "未知错误"}`, Boolean(result.ok));
     }
 
-    async function refreshLogs(updateStatus = true) {
-      const result = await api("/api/logs?lines=140");
-      $("logsBox").textContent = result.ok ? (result.logs || "暂无日志。") : `读取日志失败：${result.error}`;
-      if (updateStatus) {
-        showView("preview");
-        showPane("logsPane");
-      }
-      if (updateStatus) setStatus(result.ok ? "日志已刷新" : "日志读取失败", Boolean(result.ok));
-    }
-
-    async function applyVolume() {
+    async function applyVolume({ silentNoMixer = true } = {}) {
       updateRangeFill();
+      if (!$("mixer_control_name").value) {
+        if (!silentNoMixer) setStatus("选择硬件音量控件后可实时应用", false);
+        return;
+      }
       const result = await api("/api/volume", {
         method: "POST",
         body: JSON.stringify(formSettings())
       });
       setStatus(result.ok ? "硬件音量已更新" : `音量未应用：${result.error || "检查 Mixer 控件"}`, Boolean(result.ok));
+    }
+
+    function scheduleApplyVolume() {
+      updateRangeFill();
+      if (volumeApplyTimer) clearTimeout(volumeApplyTimer);
+      volumeApplyTimer = setTimeout(() => {
+        applyVolume().catch((error) => setStatus(`音量未应用：${error.message}`, false));
+      }, 120);
     }
 
     function bindEvents() {
@@ -2182,11 +1978,14 @@
       });
       $("name").addEventListener("input", () => setStatus("名称已修改，保存后生效"));
       $("audio_device").addEventListener("change", refreshMixers);
-      $("volume_percent").addEventListener("input", updateRangeFill);
-      $("volume_percent").addEventListener("change", applyVolume);
+      $("volume_percent").addEventListener("input", scheduleApplyVolume);
+      $("volume_percent").addEventListener("change", () => applyVolume({ silentNoMixer: false }));
       ["volume_range_db", "volume_max_db"].forEach((id) => {
-        $(id).addEventListener("input", updateDbControls);
-        $(id).addEventListener("change", () => setStatus("高级音量已修改，保存后生效"));
+        $(id).addEventListener("input", () => {
+          updateDbControls();
+          setStatus("高级音量已修改，保存并重启后生效");
+        });
+        $(id).addEventListener("change", () => setStatus("高级音量已修改，保存并重启后生效"));
       });
       document.querySelectorAll(".db-step").forEach((button) => {
         button.addEventListener("click", () => {
@@ -2194,28 +1993,8 @@
           stepDbControl(button);
         });
       });
-      $("previewBtn").addEventListener("click", () => { bounce($("previewBtn")); previewConfig(true); });
-      $("openPreviewPageBtn").addEventListener("click", () => { bounce($("openPreviewPageBtn")); previewConfig(true); });
-      $("backToConfigBtn").addEventListener("click", () => { bounce($("backToConfigBtn")); showView("config"); });
       $("saveBtn").addEventListener("click", () => { bounce($("saveBtn")); saveAndRestart(); });
       $("restartBtn").addEventListener("click", () => { bounce($("restartBtn")); restartOnly(); });
-      $("refreshBtn").addEventListener("click", () => {
-        bounce($("refreshBtn"));
-        const previewOpen = !$("previewView").hidden;
-        const activePane = document.querySelector(".panel-tab.active")?.dataset.pane;
-        if (previewOpen && activePane === "logsPane") {
-          refreshLogs();
-        } else {
-          refreshState();
-        }
-      });
-      document.querySelectorAll(".panel-tab").forEach((tab) => {
-        tab.addEventListener("click", () => {
-          bounce(tab);
-          showPane(tab.dataset.pane);
-          if (tab.dataset.pane === "logsPane") refreshLogs(false);
-        });
-      });
     }
 
     setTheme(themePreference);
@@ -2229,7 +2008,6 @@
       updateDbControls();
       updateSummaries();
       setStatus(`读取失败：${error.message}`, false);
-      $("previewBox").textContent = String(error.stack || error.message || error);
     });
   </script>
 </body>

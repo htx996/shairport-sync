@@ -147,6 +147,11 @@ def test_empty_strings_use_safe_defaults():
     assert settings["volume_max_db"] == DEFAULTS["volume_max_db"]
 
 
+def test_default_name_is_plain_airplay():
+    assert DEFAULTS["name"] == "AirPlay"
+    assert normalize_settings({})["name"] == "AirPlay"
+
+
 def test_escape_libconfig_string_handles_backslash_before_quote():
     assert escape_libconfig_string(r'bad \" name') == r"bad \\\" name"
 
