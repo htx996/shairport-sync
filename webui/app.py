@@ -82,6 +82,7 @@ DEFAULTS: dict[str, Any] = {
 
 IFACE_RE = re.compile(r"^[A-Za-z0-9_.:-]+$")
 ALSA_DEVICE_RE = re.compile(r"^(default|(?:plug)?hw:[A-Za-z0-9_.:-]+(?:,[A-Za-z0-9_.:-]+)?|sysdefault(?::[A-Za-z0-9_.:-]+)?)$")
+BRIDGE_NAME_RE = re.compile(r"^br\d+$")
 
 app = Flask(__name__, template_folder=str(APP_DIR / "templates"))
 
@@ -149,6 +150,11 @@ def normalize_yes_no(value: Any, default: str = "no") -> str:
     return default
 
 
+def is_excluded_interface_name(name: str) -> bool:
+    excluded_prefixes = ("docker", "br-", "bridge", "veth", "virbr", "tap", "tun")
+    return name == "lo" or name.startswith(excluded_prefixes) or BRIDGE_NAME_RE.match(name) is not None
+
+
 def normalize_settings(raw: dict[str, Any] | None) -> dict[str, Any]:
     source = {**DEFAULTS, **(raw or {})}
 
@@ -163,6 +169,8 @@ def normalize_settings(raw: dict[str, Any] | None) -> dict[str, Any]:
 
     interface = clean_inline_text(source.get("interface"))
     if interface and not IFACE_RE.match(interface):
+        interface = ""
+    if interface and is_excluded_interface_name(interface):
         interface = ""
 
     audio_device = clean_inline_text(source.get("audio_device"))
@@ -286,14 +294,13 @@ def read_text_file(path: Path) -> str:
 
 def discover_interfaces() -> list[dict[str, Any]]:
     net_dir = Path(os.environ.get("NET_CLASS_DIR", "/sys/class/net"))
-    excluded_prefixes = ("docker", "br-", "veth")
     interfaces: list[dict[str, Any]] = []
     if not net_dir.exists():
         return interfaces
 
     for item in sorted(net_dir.iterdir(), key=lambda p: p.name):
         name = item.name
-        if name == "lo" or name.startswith(excluded_prefixes):
+        if is_excluded_interface_name(name) or (item / "bridge").exists():
             continue
         operstate = read_text_file(item / "operstate").strip() or "unknown"
         address = read_text_file(item / "address").strip()

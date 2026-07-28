@@ -5,6 +5,7 @@ from types import SimpleNamespace
 from app import (
     DEFAULTS,
     choose_shairport_container,
+    discover_interfaces,
     escape_libconfig_string,
     generate_config,
     normalize_settings,
@@ -75,6 +76,30 @@ def test_invalid_enums_and_devices_fall_back():
     assert settings["ignore_volume_control"] == DEFAULTS["ignore_volume_control"]
     assert settings["audio_device"] == DEFAULTS["audio_device"]
     assert settings["interface"] == ""
+
+
+def test_bridge_interfaces_are_rejected():
+    assert normalize_settings({"interface": "bridge0"})["interface"] == ""
+    assert normalize_settings({"interface": "br0"})["interface"] == ""
+    assert normalize_settings({"interface": "eth0"})["interface"] == "eth0"
+
+
+def test_discover_interfaces_filters_virtual_bridges(tmp_path, monkeypatch):
+    net_dir = tmp_path / "net"
+    net_dir.mkdir()
+    for name in ["lo", "docker0", "br-test", "br0", "bridge0", "veth123", "eth0", "eth1"]:
+        iface = net_dir / name
+        iface.mkdir()
+        (iface / "operstate").write_text("up\n", encoding="utf-8")
+        (iface / "address").write_text("00:11:22:33:44:55\n", encoding="utf-8")
+        (iface / "carrier").write_text("1\n", encoding="utf-8")
+        (iface / "speed").write_text("2500\n", encoding="utf-8")
+    (net_dir / "lanbridge").mkdir()
+    (net_dir / "lanbridge" / "bridge").mkdir()
+
+    monkeypatch.setenv("NET_CLASS_DIR", str(net_dir))
+
+    assert [item["name"] for item in discover_interfaces()] == ["eth0", "eth1"]
 
 
 def test_empty_strings_use_safe_defaults():
