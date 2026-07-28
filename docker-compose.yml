@@ -22,6 +22,8 @@ services:
       - ./config:/config
       - /var/run/dbus:/var/run/dbus
       - /var/run/avahi-daemon/socket:/var/run/avahi-daemon/socket
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
     logging:
       options:
         max-size: "500k"
@@ -42,9 +44,11 @@ services:
       - ./data:/data
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
+      TZ: ${TZ:-Asia/Shanghai}
       SHAIRPORT_CONTAINER: shairport-sync
       PANEL_HOST: 0.0.0.0
       PANEL_PORT: "8099"
+      # PANEL_USER: admin
       # PANEL_PASSWORD: "change-me"
     depends_on:
       - shairport-sync

@@ -13,7 +13,7 @@ RUN set -eux; \
       exit 1; \
     fi
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
       build-essential \
       git \
       autoconf \
@@ -93,11 +93,12 @@ RUN set -eux; \
 
 FROM --platform=linux/amd64 debian:bookworm-slim AS runtime
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
       alsa-utils \
       avahi-daemon \
       dbus \
       ca-certificates \
+      tzdata \
       procps \
       libpopt0 \
       libconfig9 \
@@ -114,6 +115,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       libavcodec59 \
       libavformat59 \
     && rm -rf /var/lib/apt/lists/*
+
+ENV TZ=Asia/Shanghai
 
 COPY --from=builder /opt/root/ /
 COPY build/entrypoint.sh /usr/local/bin/entrypoint.sh

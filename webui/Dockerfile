@@ -2,15 +2,17 @@ FROM python:3.12-slim-bookworm
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
+    TZ=Asia/Shanghai \
     CONFIG_DIR=/config \
     DATA_DIR=/data \
     PANEL_HOST=0.0.0.0 \
     PANEL_PORT=8099 \
     SHAIRPORT_CONTAINER=shairport-sync
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
       alsa-utils \
       ca-certificates \
+      tzdata \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

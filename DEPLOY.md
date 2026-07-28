@@ -51,6 +51,8 @@ services:
       - ./config:/config
       - /var/run/dbus:/var/run/dbus
       - /var/run/avahi-daemon/socket:/var/run/avahi-daemon/socket
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
     logging:
       options:
         max-size: "500k"
@@ -69,6 +71,7 @@ services:
       - ./data:/data
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
+      TZ: ${TZ:-Asia/Shanghai}
       SHAIRPORT_CONTAINER: shairport-sync
       PANEL_HOST: 0.0.0.0
       PANEL_PORT: "8099"
@@ -109,6 +112,32 @@ http://NAS_IP:8099
 3. 如果要播放端控制音量，保持 `忽略 iOS 音量` 关闭。
 4. `音量范围` 建议先用 `60 dB`；如果播放端音量归零后仍能听到，可以改成 `90 dB`。
 5. 点击保存并重启。
+
+## 环境变量说明
+
+AirPlay 接收端容器：
+
+```text
+TZ=Asia/Shanghai
+```
+
+Web 面板容器：
+
+```text
+TZ=Asia/Shanghai
+SHAIRPORT_CONTAINER=shairport-sync
+PANEL_HOST=0.0.0.0
+PANEL_PORT=8099
+```
+
+可选认证：
+
+```text
+PANEL_USER=admin
+PANEL_PASSWORD=换成强密码
+```
+
+不要在 compose 或 GUI 里手工配置 `SPS_MODEL`。图标型号由 Web 面板写入 `config/model.env`，接收端启动时读取它。
 
 ## 方法一补充：使用仓库自带 compose 文件
 
@@ -170,6 +199,12 @@ hanfu1997/airplay-panel
 平台：linux/amd64
 ```
 
+环境变量：
+
+```text
+TZ=Asia/Shanghai
+```
+
 设备：
 
 ```text
@@ -221,6 +256,7 @@ SYS_NICE
 环境变量：
 
 ```text
+TZ=Asia/Shanghai
 SHAIRPORT_CONTAINER=shairport-sync
 PANEL_HOST=0.0.0.0
 PANEL_PORT=8099

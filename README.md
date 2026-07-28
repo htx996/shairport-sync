@@ -69,6 +69,7 @@ hanfu1997/airplay-panel
 挂载：你的持久化目录/config -> /config
 挂载：/var/run/dbus -> /var/run/dbus
 挂载：/var/run/avahi-daemon/socket -> /var/run/avahi-daemon/socket
+环境变量：TZ=Asia/Shanghai
 ```
 
 创建第二个容器：
@@ -82,6 +83,7 @@ hanfu1997/airplay-panel
 挂载：你的持久化目录/config -> /config
 挂载：你的持久化目录/data -> /data
 挂载：/var/run/docker.sock -> /var/run/docker.sock
+环境变量：TZ=Asia/Shanghai
 环境变量：SHAIRPORT_CONTAINER=shairport-sync
 环境变量：PANEL_HOST=0.0.0.0
 环境变量：PANEL_PORT=8099
@@ -90,6 +92,8 @@ hanfu1997/airplay-panel
 GUI 方法的完整字段和注意事项见 [DEPLOY.md](DEPLOY.md#方法二gui-图形界面搜索镜像下载部署)。
 
 GUI 部署时不要做桥接端口映射，两个容器都必须使用 host 网络；启动后访问 `http://NAS_IP:8099`。
+
+图标型号不用手工配置环境变量。面板会把选择结果写到 `config/model.env`，接收端启动时读取里面的 `SPS_MODEL`。
 
 ## 本地构建启动
 
@@ -112,6 +116,7 @@ http://NAS_IP:8099
 如果要启用 HTTP Basic 认证，在 `docker-compose.yml` 的 `webui.environment` 里设置：
 
 ```yaml
+TZ: Asia/Shanghai
 PANEL_USER: admin
 PANEL_PASSWORD: "换成强密码"
 ```
