@@ -29,7 +29,69 @@
 
 `config/` 和 `data/` 是宿主机运行数据，已经在 `.dockerignore` 里排除，不会被打进镜像。
 
-## 启动
+## 两种部署方式
+
+### 方法一：Docker Compose 部署（推荐）
+
+在 NAS 上创建目录：
+
+```bash
+APP_DIR=/volume1/docker/airplay
+mkdir -p "$APP_DIR/config" "$APP_DIR/data"
+cd "$APP_DIR"
+```
+
+创建 `docker-compose.yml`，完整 YAML 见 [DEPLOY.md](DEPLOY.md#方法一docker-compose-部署推荐)。也可以直接使用仓库里的：
+
+```bash
+docker compose -f docker-compose.published.yml config
+docker compose -f docker-compose.published.yml up -d
+```
+
+### 方法二：GUI 图形界面搜索镜像部署
+
+在 UGOS / NAS Docker 图形界面中搜索并下载两个镜像：
+
+```text
+hanfu1997/airplay
+hanfu1997/airplay-panel
+```
+
+创建第一个容器：
+
+```text
+容器名：shairport-sync
+镜像：hanfu1997/airplay:latest
+网络：host
+重启策略：unless-stopped / 总是重启
+设备：/dev/snd -> /dev/snd
+权限：SYS_NICE
+挂载：你的持久化目录/config -> /config
+挂载：/var/run/dbus -> /var/run/dbus
+挂载：/var/run/avahi-daemon/socket -> /var/run/avahi-daemon/socket
+```
+
+创建第二个容器：
+
+```text
+容器名：shairport-sync-webui
+镜像：hanfu1997/airplay-panel:latest
+网络：host
+重启策略：unless-stopped / 总是重启
+设备：/dev/snd -> /dev/snd
+挂载：你的持久化目录/config -> /config
+挂载：你的持久化目录/data -> /data
+挂载：/var/run/docker.sock -> /var/run/docker.sock
+环境变量：SHAIRPORT_CONTAINER=shairport-sync
+环境变量：PANEL_HOST=0.0.0.0
+环境变量：PANEL_PORT=8099
+```
+
+GUI 方法的完整字段和注意事项见 [DEPLOY.md](DEPLOY.md#方法二gui-图形界面搜索镜像下载部署)。
+
+GUI 部署时不要做桥接端口映射，两个容器都必须使用 host 网络；启动后访问 `http://NAS_IP:8099`。
+
+## 本地构建启动
 
 在 NAS 上进入项目目录：
 
@@ -45,7 +107,7 @@ http://NAS_IP:8099
 
 首次启动时如果 `config/` 是空目录，AirPlay 容器会自动写入一个可启动的默认 `shairport-sync.conf` 和 `model.env`，默认名称为 `AirPlay`。进面板后再选择音频输出和图标，保存并重启生效。
 
-完整的已发布镜像部署方式、可复制 YAML、UGOS 图形界面“搜索镜像下载部署”步骤见 [DEPLOY.md](DEPLOY.md)。
+完整的部署方式、可复制 YAML、UGOS 图形界面“搜索镜像下载部署”步骤见 [DEPLOY.md](DEPLOY.md)。
 
 如果要启用 HTTP Basic 认证，在 `docker-compose.yml` 的 `webui.environment` 里设置：
 

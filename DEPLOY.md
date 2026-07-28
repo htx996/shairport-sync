@@ -16,7 +16,12 @@ hanfu1997/airplay-panel:latest
 - `hanfu1997/airplay`：AirPlay 2 接收端，包含 nqptp 和打了 `SPS_MODEL` 补丁的 shairport-sync。
 - `hanfu1997/airplay-panel`：Web 配置面板，负责生成配置、调硬件音量、重启接收端。
 
-## 推荐方式：Docker Compose 部署
+## 两种部署方式
+
+- 方法一：Docker Compose 部署。推荐，配置最完整，也最容易复现。
+- 方法二：GUI 图形界面搜索镜像部署。适合只想在 NAS Docker 管理器里操作的情况，但必须手动补齐 host 网络、设备、挂载、权限和环境变量。
+
+## 方法一：Docker Compose 部署（推荐）
 
 先在 NAS 上创建一个持久化目录。下面用 `/volume1/docker/airplay` 举例；如果你的 UGOS 实际路径不同，把它替换成你自己的真实路径。
 
@@ -105,7 +110,7 @@ http://NAS_IP:8099
 4. `音量范围` 建议先用 `60 dB`；如果播放端音量归零后仍能听到，可以改成 `90 dB`。
 5. 点击保存并重启。
 
-## 使用仓库自带 compose 文件
+## 方法一补充：使用仓库自带 compose 文件
 
 如果你是从 GitHub 克隆本仓库，也可以直接使用：
 
@@ -142,7 +147,7 @@ grep -nE 'dsp|convolution|equalizer' ./config/shairport-sync.conf
 
 正常情况下应没有输出。
 
-## 图形界面：直接搜索镜像下载部署
+## 方法二：GUI 图形界面搜索镜像下载部署
 
 如果你想在 UGOS / NAS Docker 图形界面里直接搜索镜像，也可以，但必须把网络、设备、挂载和容器名配置完整。只下载镜像不会自动创建可用服务。
 
