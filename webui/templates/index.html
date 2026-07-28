@@ -4,55 +4,109 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="data:,">
+  <script>
+    (() => {
+      const key = "airplay-panel-theme";
+      const value = localStorage.getItem(key) || "system";
+      document.documentElement.dataset.themePreference = value;
+      if (value === "light" || value === "dark") {
+        document.documentElement.dataset.theme = value;
+      }
+    })();
+  </script>
   <title>Shairport Sync</title>
   <style>
     :root {
-      color-scheme: light dark;
-      --system-bg: #F2F2F7;
-      --system-surface: rgba(255, 255, 255, 0.58);
-      --system-surface-strong: rgba(255, 255, 255, 0.78);
-      --toolbar-surface: rgba(255, 255, 255, 0.86);
-      --label: #000;
+      color-scheme: light;
+      --bg: #F2F2F7;
+      --bg2: #FBFBFD;
+      --label: #050506;
       --secondary: rgba(60, 60, 67, 0.72);
-      --tertiary: rgba(60, 60, 67, 0.36);
-      --separator: rgba(60, 60, 67, 0.22);
+      --tertiary: rgba(60, 60, 67, 0.38);
+      --separator: rgba(60, 60, 67, 0.20);
+      --glass: rgba(255, 255, 255, 0.24);
+      --glass-strong: rgba(255, 255, 255, 0.32);
+      --glass-heavy: rgba(255, 255, 255, 0.44);
+      --glass-control: rgba(255, 255, 255, 0.16);
+      --fill: rgba(120, 120, 128, 0.08);
+      --fill-strong: rgba(120, 120, 128, 0.13);
+      --edge: rgba(255, 255, 255, 0.42);
+      --inner-edge: rgba(255, 255, 255, 0.55);
+      --shadow: rgba(31, 35, 46, 0.09);
+      --shadow-soft: rgba(31, 35, 46, 0.05);
       --blue: #007AFF;
+      --blue2: #0A84FF;
       --green: #34C759;
-      --red: #FF3B30;
       --orange: #FF9500;
+      --red: #FF3B30;
       --purple: #AF52DE;
-      --fill: rgba(120, 120, 128, 0.16);
-      --shadow: rgba(31, 41, 55, 0.15);
-      --card-line: rgba(255, 255, 255, 0.46);
-      --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-      --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+      --ring: rgba(0, 122, 255, 0.34);
       --radius-card: 26px;
       --radius-inner: 16px;
-      --page-max: 1180px;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+      --page-max: 1240px;
+      --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+      --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+      --ease-spring: cubic-bezier(0.18, 1.28, 0.32, 1);
+      --nav-h: 68px;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", sans-serif;
+      font-optical-sizing: auto;
     }
 
     @media (prefers-color-scheme: dark) {
-      :root {
-        --system-bg: #000;
-        --system-surface: rgba(44, 44, 46, 0.54);
-        --system-surface-strong: rgba(44, 44, 46, 0.74);
-        --toolbar-surface: rgba(28, 28, 30, 0.88);
-        --label: #fff;
+      :root:not([data-theme]) {
+        color-scheme: dark;
+        --bg: #000000;
+        --bg2: #111113;
+        --label: #FFFFFF;
         --secondary: rgba(235, 235, 245, 0.68);
-        --tertiary: rgba(235, 235, 245, 0.34);
-        --separator: rgba(84, 84, 88, 0.56);
-        --fill: rgba(118, 118, 128, 0.28);
-        --shadow: rgba(0, 0, 0, 0.38);
-        --card-line: rgba(255, 255, 255, 0.18);
+        --tertiary: rgba(235, 235, 245, 0.38);
+        --separator: rgba(84, 84, 88, 0.58);
+        --glass: rgba(28, 28, 30, 0.20);
+        --glass-strong: rgba(36, 36, 38, 0.28);
+        --glass-heavy: rgba(28, 28, 30, 0.36);
+        --glass-control: rgba(255, 255, 255, 0.04);
+        --fill: rgba(118, 118, 128, 0.13);
+        --fill-strong: rgba(118, 118, 128, 0.18);
+        --edge: rgba(255, 255, 255, 0.11);
+        --inner-edge: rgba(255, 255, 255, 0.12);
+        --shadow: rgba(0, 0, 0, 0.24);
+        --shadow-soft: rgba(0, 0, 0, 0.14);
+        --ring: rgba(10, 132, 255, 0.44);
       }
     }
 
-    * { box-sizing: border-box; }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #000000;
+      --bg2: #111113;
+      --label: #FFFFFF;
+      --secondary: rgba(235, 235, 245, 0.68);
+      --tertiary: rgba(235, 235, 245, 0.38);
+      --separator: rgba(84, 84, 88, 0.58);
+      --glass: rgba(28, 28, 30, 0.20);
+      --glass-strong: rgba(36, 36, 38, 0.28);
+      --glass-heavy: rgba(28, 28, 30, 0.36);
+      --glass-control: rgba(255, 255, 255, 0.04);
+      --fill: rgba(118, 118, 128, 0.13);
+      --fill-strong: rgba(118, 118, 128, 0.18);
+      --edge: rgba(255, 255, 255, 0.11);
+      --inner-edge: rgba(255, 255, 255, 0.12);
+      --shadow: rgba(0, 0, 0, 0.24);
+      --shadow-soft: rgba(0, 0, 0, 0.14);
+      --ring: rgba(10, 132, 255, 0.44);
+    }
+
+    :root[data-theme="light"] {
+      color-scheme: light;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
 
     html {
       min-height: 100%;
-      background: var(--system-bg);
+      background: var(--bg);
     }
 
     body {
@@ -60,55 +114,60 @@
       min-height: 100vh;
       color: var(--label);
       background:
-        radial-gradient(circle at 12% 10%, rgba(0, 122, 255, 0.24), transparent 32%),
-        radial-gradient(circle at 88% 8%, rgba(52, 199, 89, 0.18), transparent 30%),
-        radial-gradient(circle at 18% 82%, rgba(255, 149, 0, 0.20), transparent 34%),
-        radial-gradient(circle at 86% 76%, rgba(255, 45, 85, 0.16), transparent 32%),
-        var(--system-bg);
+        radial-gradient(1200px 720px at 12% 4%, rgba(0, 122, 255, 0.22), transparent 62%),
+        radial-gradient(1050px 680px at 86% 0%, rgba(52, 199, 89, 0.18), transparent 61%),
+        radial-gradient(900px 560px at 16% 86%, rgba(255, 149, 0, 0.18), transparent 66%),
+        radial-gradient(900px 620px at 88% 88%, rgba(255, 45, 85, 0.14), transparent 66%),
+        linear-gradient(180deg, var(--bg2), var(--bg));
       overflow-x: hidden;
+      transition:
+        color 220ms ease,
+        background-color 220ms ease;
     }
 
     body::before {
       content: "";
       position: fixed;
-      inset: -12%;
+      inset: 0;
       z-index: -2;
-      background:
-        radial-gradient(ellipse at 18% 22%, rgba(10, 132, 255, 0.34), transparent 34%),
-        radial-gradient(ellipse at 70% 18%, rgba(48, 209, 88, 0.24), transparent 31%),
-        radial-gradient(ellipse at 26% 78%, rgba(255, 159, 10, 0.22), transparent 36%),
-        radial-gradient(ellipse at 82% 72%, rgba(191, 90, 242, 0.18), transparent 34%);
-      filter: blur(34px) saturate(1.25);
-      opacity: 0.94;
       pointer-events: none;
+      background:
+        linear-gradient(115deg, rgba(255, 255, 255, 0.50), rgba(255, 255, 255, 0.04) 42%, rgba(255, 255, 255, 0.24)),
+        radial-gradient(700px 480px at 48% 16%, rgba(255, 255, 255, 0.28), transparent 68%);
+    }
+
+    :root[data-theme="dark"] body::before {
+      background:
+        linear-gradient(115deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.18) 42%, rgba(255, 255, 255, 0.05)),
+        radial-gradient(700px 480px at 48% 16%, rgba(255, 255, 255, 0.05), transparent 68%);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme]) body::before {
+        background:
+          linear-gradient(115deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.18) 42%, rgba(255, 255, 255, 0.05)),
+          radial-gradient(700px 480px at 48% 16%, rgba(255, 255, 255, 0.05), transparent 68%);
+      }
     }
 
     body::after {
       content: "";
       position: fixed;
-      inset: 0;
-      z-index: -1;
-      background: linear-gradient(180deg, rgba(255,255,255,0.34), rgba(255,255,255,0.06) 34%, rgba(255,255,255,0.18));
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 35;
+      height: 178px;
       pointer-events: none;
+      background: linear-gradient(180deg, rgba(242, 242, 247, 0), color-mix(in srgb, var(--bg), transparent 4%) 74%);
     }
 
-    @media (prefers-color-scheme: dark) {
-      body::after {
-        background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(0,0,0,0.20) 36%, rgba(0,0,0,0.52));
-      }
-    }
-
-    @media (prefers-reduced-transparency: reduce) {
-      body,
-      body::before,
-      body::after {
-        background: var(--system-bg);
-        filter: none;
-      }
-    }
-
-    button, input, select, textarea {
+    button,
+    input,
+    select,
+    textarea {
       font: inherit;
+      color: inherit;
     }
 
     button {
@@ -116,468 +175,551 @@
       cursor: pointer;
     }
 
-    .shell {
-      width: min(var(--page-max), calc(100vw - 48px));
+    svg {
+      display: block;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      width: min(var(--page-max), calc(100% - 56px));
       margin: 0 auto;
-      padding: 22px 0 124px;
+      padding: 26px 0 140px;
     }
 
-    .glass {
-      background: var(--system-surface);
-      border: 1px solid var(--card-line);
+    .view[hidden] {
+      display: none !important;
+    }
+
+    .liquid {
+      position: relative;
+      background:
+        linear-gradient(145deg, color-mix(in srgb, var(--glass-strong), transparent 12%), color-mix(in srgb, var(--glass), transparent 8%)),
+        linear-gradient(180deg, rgba(255,255,255,0.24), rgba(255,255,255,0));
+      border: 1px solid var(--edge);
       box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.52),
-        inset 0 -18px 36px rgba(255, 255, 255, 0.08),
-        0 22px 64px var(--shadow);
-      -webkit-backdrop-filter: blur(28px) saturate(1.85);
-      backdrop-filter: blur(28px) saturate(1.85);
+        0 28px 80px var(--shadow),
+        0 8px 24px var(--shadow-soft),
+        inset 0 1px 0 var(--inner-edge),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+      -webkit-backdrop-filter: blur(32px) saturate(1.8);
+      backdrop-filter: blur(32px) saturate(1.8);
     }
 
-    @media (prefers-color-scheme: dark) {
-      .glass {
-        border-color: rgba(255, 255, 255, 0.18);
-        box-shadow:
-          inset 0 1px 0 rgba(255, 255, 255, 0.16),
-          inset 0 -18px 36px rgba(255, 255, 255, 0.04),
-          0 24px 72px var(--shadow);
-      }
+    .liquid::before {
+      content: "";
+      position: absolute;
+      inset: 1px;
+      border-radius: inherit;
+      pointer-events: none;
+      background:
+        linear-gradient(120deg, rgba(255,255,255,0.55), rgba(255,255,255,0.08) 32%, transparent 54%),
+        linear-gradient(180deg, rgba(255,255,255,0.22), transparent 28%);
+      opacity: 0.30;
+      mix-blend-mode: screen;
     }
 
-    @media (prefers-reduced-transparency: reduce) {
-      .glass {
-        background: var(--system-surface-strong);
-        -webkit-backdrop-filter: none;
-        backdrop-filter: none;
-      }
+    .top-controls {
+      position: absolute;
+      top: 16px;
+      right: 24px;
+      z-index: 45;
+      display: flex;
+      justify-content: flex-end;
+      pointer-events: none;
     }
 
-    @media (prefers-reduced-motion: reduce) {
-      *,
-      *::before,
-      *::after {
-        transition-duration: 0.01ms !important;
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        scroll-behavior: auto !important;
-      }
+    .airplay-glyph {
+      position: relative;
+      width: 25px;
+      height: 23px;
     }
 
-    .nav {
-      position: sticky;
-      top: 14px;
-      z-index: 10;
+    .airplay-glyph::before,
+    .airplay-glyph::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 2px solid currentColor;
+      border-bottom: 0;
+      border-radius: 20px 20px 0 0;
+    }
+
+    .airplay-glyph::before {
+      top: 2px;
+      width: 23px;
+      height: 12px;
+    }
+
+    .airplay-glyph::after {
+      top: 8px;
+      width: 15px;
+      height: 8px;
+    }
+
+    .airplay-glyph span {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      width: 0;
+      height: 0;
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-bottom: 10px solid currentColor;
+      transform: translateX(-50%);
+    }
+
+    .nav-actions {
+      flex: 0 0 auto;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      min-height: 54px;
-      margin-bottom: 26px;
-      padding: 11px 16px;
-      border-radius: 27px;
-      transition: max-width 220ms var(--ease-out), transform 220ms var(--ease-out), padding 220ms var(--ease-out), box-shadow 220ms ease;
-    }
-
-    .nav.scrolled {
-      max-width: 390px;
-      margin-left: auto;
-      margin-right: auto;
-      padding: 8px 12px;
-      transform: translateY(2px);
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 0;
-    }
-
-    .brand-mark {
-      width: 34px;
-      height: 34px;
-      flex: 0 0 34px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      color: #fff;
-      background: linear-gradient(145deg, var(--blue), var(--green));
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.38), 0 8px 20px rgba(0,122,255,0.24);
-    }
-
-    .brand h1 {
-      margin: 0;
-      font-size: 17px;
-      line-height: 1.15;
-      font-weight: 700;
-      letter-spacing: 0;
-      white-space: nowrap;
-    }
-
-    .brand p {
-      margin: 1px 0 0;
-      color: var(--secondary);
-      font-size: 12px;
-      line-height: 1.2;
-      white-space: nowrap;
+      gap: 14px;
+      pointer-events: auto;
     }
 
     .status-pill {
       display: inline-flex;
       align-items: center;
-      gap: 7px;
-      min-height: 32px;
-      padding: 0 12px;
-      border-radius: 999px;
+      gap: 8px;
+      min-height: 34px;
+      padding: 0;
+      border-radius: 0;
+      background: transparent;
       color: var(--secondary);
-      background: rgba(118, 118, 128, 0.12);
-      font-size: 13px;
+      font-size: 14px;
+      font-weight: 760;
       white-space: nowrap;
+      transition:
+        transform 180ms var(--ease-spring),
+        background-color 180ms ease,
+        color 180ms ease;
+    }
+
+    .status-pill.attention {
+      color: var(--orange);
+      background: transparent;
     }
 
     .dot {
-      width: 8px;
-      height: 8px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
       background: var(--green);
-      box-shadow: 0 0 0 4px rgba(52, 199, 89, 0.16);
+      box-shadow: 0 0 0 5px color-mix(in srgb, var(--green), transparent 84%);
+    }
+
+    .status-pill.attention .dot {
+      background: var(--orange);
+      box-shadow: 0 0 0 5px color-mix(in srgb, var(--orange), transparent 84%);
+    }
+
+    .theme-switcher {
+      display: grid;
+      grid-template-columns: repeat(3, 38px);
+      gap: 6px;
+      padding: 0;
+      border-radius: 0;
+      background: transparent;
+      border: 0;
+    }
+
+    .theme-btn {
+      position: relative;
+      z-index: 0;
+      width: 38px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--secondary);
+      transition:
+        transform 150ms var(--ease-spring),
+        color 180ms ease,
+        background-color 180ms ease,
+        box-shadow 180ms ease;
+    }
+
+    .theme-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .theme-btn.active {
+      color: var(--label);
+      background: transparent;
+      box-shadow: none;
     }
 
     .layout {
       display: grid;
-      grid-template-columns: minmax(300px, 420px) minmax(0, 680px);
-      gap: 32px;
+      grid-template-columns: minmax(340px, 430px) minmax(0, 1fr);
       align-items: start;
+      gap: 26px;
+      margin-top: 26px;
     }
 
-    .left-rail {
+    .left-column {
+      align-self: start;
       position: sticky;
-      top: 96px;
-      display: grid;
-      gap: 16px;
-    }
-
-    .right-rail {
-      display: grid;
-      gap: 16px;
-    }
-
-    .hero {
-      position: relative;
-      overflow: hidden;
-      border-radius: var(--radius-card);
-      padding: 22px;
-      min-height: 360px;
-      display: grid;
-      align-content: space-between;
-      gap: 20px;
-    }
-
-    .hero::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background:
-        linear-gradient(135deg, rgba(255,255,255,0.34), transparent 40%),
-        radial-gradient(ellipse at 72% 16%, rgba(0, 122, 255, 0.14), transparent 42%),
-        radial-gradient(ellipse at 12% 88%, rgba(52, 199, 89, 0.12), transparent 38%);
-      pointer-events: none;
-    }
-
-    .hero > * {
-      position: relative;
-      z-index: 1;
-    }
-
-    .hero-top {
-      display: grid;
-      gap: 16px;
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      width: fit-content;
-      min-height: 28px;
-      padding: 0 10px;
-      border-radius: 999px;
-      color: var(--secondary);
-      background: rgba(118, 118, 128, 0.13);
-      font-size: 12px;
-      font-weight: 650;
-      white-space: nowrap;
-    }
-
-    .eyebrow::before {
-      content: "";
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--green);
-      box-shadow: 0 0 0 4px rgba(52, 199, 89, 0.14);
-    }
-
-    .hero h2 {
-      margin: 0;
-      font-size: 34px;
-      line-height: 1.08;
-      font-weight: 760;
-      letter-spacing: 0;
-    }
-
-    .hero p {
-      margin: 14px 0 0;
-      color: var(--secondary);
-      font-size: 15px;
-      line-height: 1.45;
-    }
-
-    .receiver-panel {
-      display: grid;
-      grid-template-columns: 74px minmax(0, 1fr);
-      gap: 14px;
-      align-items: center;
-      min-height: 102px;
-      padding: 14px;
-      border-radius: 20px;
-      background: rgba(255, 255, 255, 0.36);
-      border: 1px solid rgba(255, 255, 255, 0.34);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.38);
-    }
-
-    @media (prefers-color-scheme: dark) {
-      .receiver-panel {
-        background: rgba(0, 0, 0, 0.18);
-        border-color: rgba(255, 255, 255, 0.13);
-      }
-    }
-
-    .receiver-icon {
-      position: relative;
-      width: 70px;
-      height: 70px;
+      top: calc(var(--nav-h) + 42px);
+      height: calc(100vh - var(--nav-h) - 94px);
+      min-height: 520px;
       display: grid;
       place-items: center;
-      color: #fff;
-      border-radius: 22px;
-      background: linear-gradient(145deg, #0A84FF, #30D158);
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.44),
-        0 16px 34px rgba(0, 122, 255, 0.24);
     }
 
-    .receiver-icon svg {
-      width: 34px;
-      height: 34px;
-      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.18));
-    }
-
-    .receiver-copy {
-      min-width: 0;
-    }
-
-    .receiver-copy strong {
-      display: block;
+    .receiver-card,
+    .settings-card {
+      border-radius: var(--radius-card);
       overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      font-size: 15px;
-      line-height: 1.25;
     }
 
-    .receiver-copy span {
-      display: block;
-      margin-top: 5px;
-      color: var(--secondary);
-      font-size: 12px;
-      line-height: 1.35;
-    }
-
-    .signal-bars {
-      display: flex;
-      align-items: end;
-      gap: 4px;
-      height: 18px;
-      margin-top: 11px;
-    }
-
-    .signal-bars i {
-      width: 7px;
-      border-radius: 999px;
-      background: linear-gradient(180deg, var(--green), var(--blue));
-      opacity: 0.92;
-    }
-
-    .signal-bars i:nth-child(1) { height: 7px; }
-    .signal-bars i:nth-child(2) { height: 11px; }
-    .signal-bars i:nth-child(3) { height: 15px; }
-    .signal-bars i:nth-child(4) { height: 18px; }
-
-    .summary-list {
+    .receiver-card {
+      width: 100%;
+      min-height: min(560px, calc(100vh - var(--nav-h) - 130px));
+      padding: 0;
       display: grid;
-      gap: 10px;
+      place-items: center;
+      overflow: visible;
+      background: transparent;
+      border-color: transparent;
+      box-shadow: none;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+      transition:
+        transform 260ms var(--ease-spring),
+        background-color 220ms ease,
+        box-shadow 220ms ease;
     }
 
-    .summary-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      min-height: 42px;
-      padding: 9px 12px;
-      border-radius: var(--radius-inner);
-      background: rgba(118, 118, 128, 0.13);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-    }
-
-    .summary-item span:first-child {
-      color: var(--secondary);
-      font-size: 13px;
-      white-space: nowrap;
-    }
-
-    .summary-item span:last-child {
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      font-size: 14px;
-      font-weight: 600;
-    }
-
-    .warning-box {
+    .receiver-card::before {
       display: none;
-      border-radius: var(--radius-card);
-      padding: 16px 18px;
-      color: #3A2A00;
-      background: rgba(255, 204, 0, 0.26);
-      border: 1px solid rgba(255, 204, 0, 0.36);
-      font-size: 13px;
-      line-height: 1.45;
-      box-shadow: 0 16px 42px rgba(255, 204, 0, 0.12);
     }
 
-    @media (prefers-color-scheme: dark) {
-      .warning-box {
-        color: #FFE28A;
-        background: rgba(255, 204, 0, 0.13);
-      }
+    .receiver-visual {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 30px;
+      min-height: 360px;
+      width: 100%;
+      padding: 24px;
     }
 
-    .warning-box.visible {
+    .device-object {
+      position: relative;
+      display: grid;
+      place-items: center;
+      color: color-mix(in srgb, var(--label), transparent 8%);
+      transition:
+        transform 260ms var(--ease-spring),
+        color 220ms ease,
+        opacity 180ms ease;
+    }
+
+    .device-object.is-swapping {
+      animation: object-pop 280ms var(--ease-spring);
+    }
+
+    .receiver-name-field {
+      width: min(430px, 100%);
       display: block;
     }
 
-    .group {
-      border-radius: var(--radius-card);
+    .receiver-name-input {
+      width: 100%;
+      min-width: 0;
+      border: 0;
+      outline: 0;
+      border-radius: 22px;
+      padding: 9px 16px 10px;
+      background: transparent;
+      color: var(--label);
+      font-size: clamp(30px, 3.3vw, 42px);
+      line-height: 1.02;
+      font-weight: 880;
+      letter-spacing: -0.03em;
+      text-align: center;
       overflow: hidden;
-      transition: transform 180ms var(--ease-out), box-shadow 180ms ease;
+      text-overflow: ellipsis;
+      transition:
+        background-color 180ms ease,
+        box-shadow 180ms ease,
+        transform 180ms var(--ease-spring);
     }
 
-    .group-head {
-      padding: 17px 20px 10px;
+    .receiver-name-input:focus {
+      background: color-mix(in srgb, var(--glass-heavy), transparent 28%);
+      box-shadow:
+        inset 0 1px 0 var(--inner-edge),
+        0 0 0 4px var(--ring);
+    }
+
+    @keyframes object-pop {
+      0% { transform: scale(0.95) translateY(7px); opacity: 0.72; }
+      64% { transform: scale(1.035) translateY(-2px); opacity: 1; }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    .obj-speaker {
+      position: relative;
+      width: 132px;
+      height: 172px;
+      border-radius: 42px;
+      background: linear-gradient(160deg, #555861, #202126 58%, #070708);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.36),
+        inset 0 -18px 30px rgba(0,0,0,0.35),
+        0 24px 42px rgba(0,0,0,0.22);
+    }
+
+    .obj-speaker::before {
+      content: "";
+      position: absolute;
+      top: 8px;
+      left: 23%;
+      right: 23%;
+      height: 18px;
+      border-radius: 50%;
+      background: radial-gradient(
+        ellipse at 50% 50%,
+        rgba(4,4,5,0.92) 0 43%,
+        rgba(180,184,192,0.62) 45% 63%,
+        rgba(255,255,255,0.28) 65% 75%,
+        transparent 77%
+      );
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.48),
+        0 2px 7px rgba(0,0,0,0.24);
+    }
+
+    .obj-speaker.mini {
+      width: 142px;
+      height: 142px;
+      border-radius: 50%;
+    }
+
+    .obj-speaker.mini::before {
+      top: 14px;
+      left: 34%;
+      right: 34%;
+      height: 13px;
+      background: radial-gradient(
+        ellipse at 50% 50%,
+        rgba(14,15,18,0.86) 0 40%,
+        rgba(190,194,203,0.62) 42% 62%,
+        rgba(255,255,255,0.24) 64% 74%,
+        transparent 76%
+      );
+      box-shadow: 0 2px 6px rgba(0,0,0,0.20);
+    }
+
+    .obj-speaker.gen1 {
+      width: 126px;
+      height: 156px;
+      border-radius: 48px;
+    }
+
+    .obj-airport {
+      position: relative;
+      width: 168px;
+      height: 96px;
+      border-radius: 28px;
+      background:
+        radial-gradient(circle at 50% 42%, rgba(0,0,0,0.18) 0 4px, transparent 5px),
+        linear-gradient(180deg, rgba(255,255,255,0.96), rgba(232,234,239,0.88));
+      border: 1px solid rgba(60, 60, 67, 0.13);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.95),
+        inset 0 -1px 0 rgba(0,0,0,0.12),
+        0 26px 38px rgba(31,35,46,0.18);
+    }
+
+    .obj-airport::before {
+      content: "";
+      position: absolute;
+      left: 28px;
+      right: 28px;
+      top: 14px;
+      height: 2px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.72);
+      box-shadow: 0 16px 26px rgba(0,0,0,0.08);
+    }
+
+    .obj-airport::after {
+      content: "";
+      position: absolute;
+      left: 20%;
+      right: 20%;
+      bottom: -12px;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.16);
+      filter: blur(12px);
+    }
+
+    .obj-generic {
+      position: relative;
+      width: 132px;
+      height: 174px;
+      border-radius: 34px;
+      background:
+        radial-gradient(circle at 50% 31%, #202229 0 23px, #747984 24px 27px, transparent 28px),
+        radial-gradient(circle at 50% 70%, #17191E 0 36px, #6E737E 37px 41px, transparent 42px),
+        linear-gradient(155deg, #F8FAFD, #D7DCE5 54%, #AEB5C2);
+      border: 1px solid rgba(68, 73, 84, 0.20);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.92),
+        inset 0 -16px 28px rgba(72,78,90,0.18),
+        0 24px 42px rgba(31,35,46,0.20);
+    }
+
+    .obj-generic .airplay-glyph {
+      display: none;
+    }
+
+    .obj-tv {
+      position: relative;
+      width: 170px;
+      height: 112px;
+      border-radius: 26px;
+      background:
+        radial-gradient(circle at 50% 18%, rgba(255,255,255,0.26), transparent 30%),
+        linear-gradient(165deg, #36363A, #09090B 62%);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.24),
+        inset 0 -14px 20px rgba(0,0,0,0.42),
+        0 24px 42px rgba(0,0,0,0.25);
+    }
+
+    .obj-tv::before {
+      content: "tv";
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: rgba(255,255,255,0.76);
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .settings {
+      display: grid;
+      gap: 16px;
+    }
+
+    .settings-card {
+      padding: 22px;
+    }
+
+    .card-head {
       display: flex;
-      align-items: center;
+      align-items: baseline;
       justify-content: space-between;
       gap: 14px;
+      margin-bottom: 14px;
     }
 
-    .group-head h3 {
+    .card-head h3 {
       margin: 0;
-      font-size: 18px;
-      line-height: 1.2;
-      font-weight: 700;
-      letter-spacing: 0;
+      font-size: 22px;
+      line-height: 1.16;
+      letter-spacing: -0.02em;
     }
 
-    .group-subtitle {
+    .card-head span {
       color: var(--secondary);
-      font-size: 12px;
-      line-height: 1.2;
+      font-size: 13px;
+      font-weight: 720;
       white-space: nowrap;
     }
 
-    .group-body {
-      margin: 0 10px 10px;
-      border-radius: var(--radius-inner);
+    .form-list {
       overflow: hidden;
-      background: rgba(255, 255, 255, 0.38);
-    }
-
-    @media (prefers-color-scheme: dark) {
-      .group-body {
-        background: rgba(0, 0, 0, 0.16);
-      }
+      border-radius: var(--radius-inner);
+      background: var(--glass-control);
+      border: 1px solid color-mix(in srgb, var(--edge), transparent 52%);
     }
 
     .row {
       position: relative;
+      min-height: 58px;
       display: flex;
       align-items: center;
-      min-height: 54px;
-      padding: 8px 12px;
-      gap: 14px;
-      transition: background-color 160ms ease;
+      gap: 16px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--separator);
+      transition:
+        transform 150ms var(--ease-spring),
+        background-color 180ms ease;
     }
 
-    .row + .row {
-      border-top: 1px solid var(--separator);
+    .row:last-child {
+      border-bottom: 0;
     }
 
     .row-label {
       flex: 0 0 auto;
       white-space: nowrap;
       font-size: 16px;
-      color: var(--label);
+      line-height: 1.2;
+      font-weight: 780;
     }
 
     .row-control {
-      min-width: 0;
       flex: 1 1 auto;
+      min-width: 0;
       display: flex;
-      align-items: center;
       justify-content: flex-end;
+      align-items: center;
       gap: 10px;
+      color: var(--secondary);
+      text-align: right;
     }
 
     .text-input,
-    .number-input {
-      width: 100%;
-      min-width: 0;
+    .number-input,
+    textarea {
       border: 0;
       outline: 0;
-      text-align: right;
-      color: var(--label);
       background: transparent;
-      font-size: 16px;
-      line-height: 1.3;
-      caret-color: var(--blue);
+      color: var(--label);
+    }
+
+    .text-input {
+      width: min(100%, 380px);
+      min-width: 0;
+      text-align: right;
+      font-size: 17px;
+      font-weight: 700;
     }
 
     .number-input {
-      max-width: 104px;
+      width: 110px;
+      text-align: right;
+      font-size: 17px;
+      font-weight: 720;
     }
 
     .select-row {
       cursor: pointer;
-    }
-
-    .select-value {
-      color: var(--secondary);
-      font-size: 15px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      text-align: right;
-    }
-
-    .chevron {
-      width: 8px;
-      height: 8px;
-      flex: 0 0 8px;
-      border-top: 2px solid var(--tertiary);
-      border-right: 2px solid var(--tertiary);
-      transform: rotate(45deg);
     }
 
     .native-select {
@@ -589,103 +731,429 @@
       cursor: pointer;
     }
 
-    .note {
-      margin: -1px 20px 18px;
-      color: var(--secondary);
-      font-size: 13px;
-      line-height: 1.42;
-    }
-
-    .model-segment {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 6px;
-      padding: 5px;
-      width: 100%;
-      border-radius: var(--radius-inner);
-      background: rgba(118, 118, 128, 0.18);
-    }
-
-    .seg-option {
-      position: relative;
+    .select-value {
       min-width: 0;
-      min-height: 58px;
-      padding: 8px;
-      color: var(--secondary);
-      background: transparent;
-      border-radius: 12px;
-      text-align: center;
-      transition: transform 150ms var(--ease-out), background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
-    }
-
-    .seg-option strong,
-    .seg-option span {
-      display: block;
+      max-width: 100%;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      font-size: 16px;
+      font-weight: 720;
     }
 
-    .seg-option strong {
-      color: inherit;
-      font-size: 13px;
-      line-height: 1.2;
-      font-weight: 650;
+    .chevron {
+      flex: 0 0 auto;
+      width: 8px;
+      height: 8px;
+      border-right: 2px solid var(--tertiary);
+      border-bottom: 2px solid var(--tertiary);
+      transform: rotate(-45deg);
     }
 
-    .seg-option span {
-      margin-top: 3px;
-      font-size: 11px;
-      line-height: 1.15;
-      color: inherit;
+    .model-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .model-card {
+      min-width: 0;
+      min-height: 122px;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 8px;
+      padding: 14px 10px;
+      border-radius: var(--radius-inner);
+      background: var(--fill);
+      color: var(--secondary);
+      border: 1px solid color-mix(in srgb, var(--edge), transparent 58%);
+      box-shadow: inset 0 1px 0 color-mix(in srgb, var(--inner-edge), transparent 26%);
+      text-align: center;
+      transition:
+        transform 180ms var(--ease-spring),
+        background-color 180ms ease,
+        color 180ms ease,
+        border-color 180ms ease,
+        box-shadow 180ms ease;
+    }
+
+    .model-card.active {
+      color: var(--label);
+      background:
+        linear-gradient(145deg, color-mix(in srgb, var(--blue), transparent 88%), color-mix(in srgb, var(--glass-heavy), transparent 8%));
+      border-color: color-mix(in srgb, var(--blue), transparent 12%);
+      box-shadow:
+        0 14px 32px color-mix(in srgb, var(--blue), transparent 78%),
+        inset 0 1px 0 var(--inner-edge);
+    }
+
+    .model-icon {
+      width: 74px;
+      height: 56px;
+      display: grid;
+      place-items: center;
+      color: currentColor;
+      transform: translateZ(0);
+    }
+
+    .tile-device {
+      position: relative;
+      display: block;
+      isolation: isolate;
+      transform: translateZ(0);
+    }
+
+    .tile-device::after {
+      content: "";
+      position: absolute;
+      left: 12%;
+      right: 12%;
+      bottom: -7px;
+      height: 11px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.18);
+      filter: blur(8px);
+      z-index: -1;
       opacity: 0.82;
     }
 
-    .seg-option.active {
-      color: var(--label);
-      background: var(--system-surface-strong);
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.10), inset 0 1px 0 rgba(255,255,255,0.42);
+    .tile-generic {
+      width: 44px;
+      height: 56px;
+      border-radius: 13px;
+      background:
+        radial-gradient(circle at 50% 31%, #24272E 0 7px, #A8AFBA 8px 9px, transparent 10px),
+        radial-gradient(circle at 50% 69%, #1B1D22 0 13px, #9EA6B2 14px 16px, transparent 17px),
+        linear-gradient(155deg, #FFFFFF, #D9DEE7 58%, #B5BCC8);
+      border: 1px solid rgba(68, 73, 84, 0.16);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.92),
+        inset 0 -8px 14px rgba(72,78,90,0.16),
+        0 10px 18px rgba(40,45,56,0.18);
     }
 
-    .seg-option:active,
-    .btn:active,
-    .select-row:active {
-      transform: scale(0.97);
+    .tile-generic .airplay-glyph {
+      display: none;
+    }
+
+    .tile-airport {
+      width: 64px;
+      height: 33px;
+      margin-top: 9px;
+      border-radius: 13px;
+      background:
+        radial-gradient(circle at 50% 43%, rgba(40,43,49,0.36) 0 2px, transparent 3px),
+        linear-gradient(180deg, #FFFFFF, #E7EAF0 76%, #CDD2DB);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.96),
+        inset 0 -1px 0 rgba(0,0,0,0.16),
+        0 10px 18px rgba(40,45,56,0.18);
+    }
+
+    .tile-airport::before {
+      content: "";
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      top: 6px;
+      height: 2px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.74);
+      box-shadow: 0 9px 14px rgba(0,0,0,0.10);
+    }
+
+    .tile-homepod {
+      width: 44px;
+      height: 54px;
+      border-radius: 17px;
+      background: linear-gradient(155deg, #676A72, #25262B 58%, #080809);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.34),
+        inset 0 -10px 18px rgba(0,0,0,0.38),
+        0 11px 20px rgba(0,0,0,0.22);
+    }
+
+    .tile-homepod::before {
+      content: "";
+      position: absolute;
+      top: 5px;
+      left: 22%;
+      right: 22%;
+      height: 10px;
+      border-radius: 50%;
+      background: radial-gradient(
+        ellipse at 50% 50%,
+        rgba(6,6,8,0.92) 0 42%,
+        rgba(178,182,190,0.58) 44% 62%,
+        rgba(255,255,255,0.24) 64% 74%,
+        transparent 76%
+      );
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.42),
+        0 2px 5px rgba(0,0,0,0.22);
+    }
+
+    .tile-homepod.tile-mini {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #757983, #303138 58%, #111214);
+    }
+
+    .tile-homepod.tile-mini::before {
+      top: 8px;
+      left: 33%;
+      right: 33%;
+      height: 8px;
+      background: radial-gradient(
+        ellipse at 50% 50%,
+        rgba(18,19,22,0.84) 0 38%,
+        rgba(190,194,203,0.58) 40% 62%,
+        rgba(255,255,255,0.22) 64% 74%,
+        transparent 76%
+      );
+      box-shadow: 0 1px 5px rgba(0,0,0,0.20);
+    }
+
+    .tile-homepod.tile-gen1 {
+      width: 41px;
+      height: 58px;
+      border-radius: 18px;
+    }
+
+    .tile-homepod.tile-gen2 {
+      width: 48px;
+      height: 55px;
+      border-radius: 18px;
+      background: linear-gradient(155deg, #595C64, #1D1E23 62%, #050506);
+    }
+
+    .tile-tv {
+      width: 58px;
+      height: 40px;
+      margin-top: 7px;
+      border-radius: 12px;
+      background:
+        radial-gradient(circle at 50% 14%, rgba(255,255,255,0.32), transparent 32%),
+        linear-gradient(165deg, #44464B, #101114 60%, #050505);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.24),
+        inset 0 -10px 16px rgba(0,0,0,0.38),
+        0 11px 20px rgba(0,0,0,0.24);
+    }
+
+    .tile-tv::before {
+      content: "tv";
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: rgba(255,255,255,0.72);
+      font-size: 14px;
+      font-weight: 850;
+      letter-spacing: -0.03em;
+    }
+
+    .model-title {
+      max-width: 100%;
+      font-size: 15px;
+      line-height: 1.12;
+      font-weight: 820;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .model-detail {
+      max-width: 100%;
+      min-height: 28px;
+      color: var(--secondary);
+      font-size: 12px;
+      line-height: 1.16;
+      font-weight: 650;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .note {
+      margin: 12px 2px 0;
+      color: var(--secondary);
+      font-size: 14px;
+      line-height: 1.46;
+      font-weight: 620;
+    }
+
+    .range-wrap {
+      min-width: 0;
+      width: min(270px, 100%);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    input[type="range"] {
+      flex: 1 1 auto;
+      min-width: 120px;
+      height: 28px;
+      margin: 0;
+      appearance: none;
+      -webkit-appearance: none;
+      background: transparent;
+      --range-fill: 70%;
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 8px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--blue) 0 var(--range-fill), var(--fill-strong) var(--range-fill) 100%);
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 28px;
+      height: 28px;
+      margin-top: -10px;
+      border-radius: 50%;
+      background: color-mix(in srgb, white, var(--bg) 5%);
+      box-shadow: 0 5px 14px rgba(0, 0, 0, 0.20), inset 0 1px 0 rgba(255,255,255,0.84);
+      transition: transform 150ms var(--ease-spring);
+    }
+
+    input[type="range"]:active::-webkit-slider-thumb {
+      transform: scale(1.08);
+    }
+
+    input[type="range"]::-moz-range-track {
+      height: 8px;
+      border-radius: 999px;
+      background: var(--fill-strong);
+    }
+
+    input[type="range"]::-moz-range-progress {
+      height: 8px;
+      border-radius: 999px;
+      background: var(--blue);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 28px;
+      height: 28px;
+      border: 0;
+      border-radius: 50%;
+      background: color-mix(in srgb, white, var(--bg) 5%);
+      box-shadow: 0 5px 14px rgba(0, 0, 0, 0.20);
+    }
+
+    .range-value {
+      width: 44px;
+      color: var(--secondary);
+      font-size: 15px;
+      font-weight: 720;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .db-list {
+      padding: 12px;
+    }
+
+    .db-control {
+      display: grid;
+      gap: 12px;
+      padding: 14px;
+      border-radius: var(--radius-inner);
+      background: color-mix(in srgb, var(--glass-control), transparent 14%);
+      border: 1px solid color-mix(in srgb, var(--edge), transparent 58%);
+    }
+
+    .db-control + .db-control {
+      margin-top: 10px;
+    }
+
+    .db-meta {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .db-meta span {
+      flex: 0 0 auto;
+      white-space: nowrap;
+      font-size: 16px;
+      font-weight: 780;
+    }
+
+    .db-meta strong {
+      color: var(--secondary);
+      font-size: 16px;
+      font-weight: 820;
+      white-space: nowrap;
+    }
+
+    .db-adjuster {
+      display: grid;
+      grid-template-columns: 38px minmax(0, 1fr) 38px;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .db-step {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--fill);
+      color: var(--label);
+      font-size: 22px;
+      line-height: 1;
+      font-weight: 700;
+      box-shadow: inset 0 1px 0 color-mix(in srgb, var(--inner-edge), transparent 22%);
+      transition:
+        transform 150ms var(--ease-spring),
+        box-shadow 180ms ease;
+    }
+
+    .db-range {
+      width: 100%;
     }
 
     .switch {
       position: relative;
       width: 51px;
       height: 31px;
-      flex: 0 0 51px;
       display: inline-block;
     }
 
     .switch input {
       position: absolute;
-      opacity: 0;
       inset: 0;
+      opacity: 0;
     }
 
     .switch-track {
       position: absolute;
       inset: 0;
       border-radius: 999px;
-      background: rgba(120, 120, 128, 0.32);
+      background: rgba(120, 120, 128, 0.30);
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.20);
       transition: background-color 180ms ease;
     }
 
     .switch-track::after {
       content: "";
       position: absolute;
-      width: 27px;
-      height: 27px;
       top: 2px;
       left: 2px;
+      width: 27px;
+      height: 27px;
       border-radius: 50%;
       background: #fff;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.22), 0 1px 1px rgba(0,0,0,0.10);
-      transition: transform 180ms var(--ease-out);
+      box-shadow: 0 3px 9px rgba(0,0,0,0.24);
+      transition: transform 220ms var(--ease-spring);
     }
 
     .switch input:checked + .switch-track {
@@ -696,404 +1164,514 @@
       transform: translateX(20px);
     }
 
-    .range-wrap {
-      display: grid;
-      grid-template-columns: minmax(120px, 1fr) 48px;
-      align-items: center;
-      gap: 12px;
-      width: min(320px, 100%);
-    }
-
-    input[type="range"] {
-      width: 100%;
-      height: 31px;
-      margin: 0;
-      appearance: none;
-      background: transparent;
-      --range-fill: 70%;
-    }
-
-    input[type="range"]::-webkit-slider-runnable-track {
-      height: 7px;
-      border-radius: 999px;
-      background: linear-gradient(90deg, var(--blue) 0 var(--range-fill), rgba(120,120,128,0.24) var(--range-fill) 100%);
-    }
-
-    input[type="range"]::-webkit-slider-thumb {
-      appearance: none;
-      width: 27px;
-      height: 27px;
-      margin-top: -10px;
-      border-radius: 50%;
-      background: #fff;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.26);
-    }
-
-    input[type="range"]::-moz-range-track {
-      height: 7px;
-      border-radius: 999px;
-      background: rgba(120,120,128,0.24);
-    }
-
-    input[type="range"]::-moz-range-progress {
-      height: 7px;
-      border-radius: 999px;
-      background: var(--blue);
-    }
-
-    .range-value {
-      color: var(--secondary);
-      font-size: 14px;
-      text-align: right;
-      white-space: nowrap;
-    }
-
     textarea {
       width: 100%;
-      min-height: 160px;
+      min-height: 150px;
       resize: vertical;
-      border: 0;
-      outline: 0;
-      color: var(--label);
-      background: transparent;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 13px;
-      line-height: 1.45;
+      padding: 16px;
+      border-radius: var(--radius-inner);
+      background: var(--glass-control);
+      border: 1px solid color-mix(in srgb, var(--edge), transparent 52%);
+      font: 13px/1.48 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     }
 
     .panel-tabs {
-      margin: 0 10px 10px;
-      padding: 4px;
-      display: grid;
+      display: inline-grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 4px;
-      border-radius: var(--radius-inner);
-      background: rgba(118, 118, 128, 0.16);
+      padding: 4px;
+      border-radius: 18px;
+      background: var(--fill);
     }
 
     .panel-tab {
       min-height: 34px;
-      border-radius: 12px;
-      color: var(--secondary);
+      padding: 0 14px;
+      border-radius: 14px;
       background: transparent;
-      font-size: 13px;
-      font-weight: 650;
-      transition: transform 150ms var(--ease-out), background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+      color: var(--secondary);
+      font-size: 14px;
+      font-weight: 780;
+      transition:
+        transform 150ms var(--ease-spring),
+        color 180ms ease,
+        background-color 180ms ease,
+        box-shadow 180ms ease;
     }
 
     .panel-tab.active {
       color: var(--label);
-      background: var(--system-surface-strong);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.38), 0 5px 16px rgba(0,0,0,0.10);
-    }
-
-    .panel-tab:active {
-      transform: scale(0.97);
+      background: color-mix(in srgb, var(--glass-heavy), transparent 10%);
+      box-shadow: 0 6px 16px var(--shadow-soft), inset 0 1px 0 var(--inner-edge);
     }
 
     .code-pane {
       display: none;
+      margin-top: 14px;
     }
 
     .code-pane.active {
       display: block;
+      animation: sheet-in 230ms var(--ease-spring);
+    }
+
+    @keyframes sheet-in {
+      0% { opacity: 0; transform: translateY(8px) scale(0.985); }
+      72% { opacity: 1; transform: translateY(-1px) scale(1.003); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
     }
 
     .code-box {
-      margin: 0 10px 10px;
-      padding: 14px;
+      min-height: 210px;
       max-height: 380px;
+      margin: 0;
+      padding: 16px;
       overflow: auto;
       border-radius: var(--radius-inner);
+      background: color-mix(in srgb, var(--fill), transparent 10%);
+      border: 1px solid color-mix(in srgb, var(--edge), transparent 62%);
       color: var(--label);
-      background: rgba(0, 0, 0, 0.06);
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 12px;
-      line-height: 1.45;
+      font: 13px/1.48 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       white-space: pre-wrap;
-      word-break: break-word;
-      border: 1px solid rgba(255, 255, 255, 0.16);
+      overflow-wrap: anywhere;
     }
 
-    @media (prefers-color-scheme: dark) {
-      .code-box {
-        background: rgba(0, 0, 0, 0.28);
-      }
+    .preview-view {
+      margin-top: 26px;
+    }
+
+    .preview-page-card {
+      min-height: min(720px, calc(100vh - var(--nav-h) - 110px));
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .preview-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .preview-title {
+      min-width: 0;
+    }
+
+    .preview-title h2 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    .preview-title p {
+      margin: 6px 0 0;
+      color: var(--secondary);
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .preview-page-card .code-box {
+      min-height: 420px;
+      max-height: none;
+      height: min(58vh, 620px);
+    }
+
+    .page-link {
+      width: 100%;
+      border: 0;
+      text-align: left;
+    }
+
+    .page-link .row-control {
+      color: var(--secondary);
     }
 
     .action-shell {
       position: fixed;
-      left: 18px;
-      right: 18px;
-      bottom: 18px;
-      z-index: 20;
+      z-index: 60;
+      left: 0;
+      right: 0;
+      bottom: 20px;
       pointer-events: none;
-    }
-
-    .action-shell::before {
-      content: "";
-      position: absolute;
-      left: -18px;
-      right: -18px;
-      bottom: -18px;
-      height: 112px;
-      background: linear-gradient(180deg, rgba(242,242,247,0), var(--system-bg) 72%);
-      pointer-events: none;
-      z-index: -1;
     }
 
     .action-align {
-      width: min(var(--page-max), calc(100vw - 48px));
+      width: min(var(--page-max), calc(100% - 56px));
       margin: 0 auto;
       display: flex;
       justify-content: flex-end;
     }
 
     .toolbar {
-      width: min(680px, 100%);
       pointer-events: auto;
+      width: auto;
+      min-height: 0;
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 10px;
-      border-radius: 25px;
-      background: var(--toolbar-surface);
-      -webkit-backdrop-filter: blur(36px) saturate(2);
-      backdrop-filter: blur(36px) saturate(2);
-      border: 1px solid rgba(255,255,255,0.48);
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.56),
-        0 18px 54px rgba(0,0,0,0.20);
-    }
-
-    .toolbar-status {
-      min-width: 0;
-      flex: 1 1 auto;
-      color: var(--secondary);
-      font-size: 13px;
-      line-height: 1.25;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      padding: 0 6px;
+      padding: 0;
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
     }
 
     .btn {
-      min-height: 40px;
-      padding: 0 14px;
+      min-height: 42px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 7px;
-      border-radius: 999px;
+      gap: 8px;
+      padding: 0 16px;
+      border-radius: 21px;
+      background: color-mix(in srgb, var(--glass-heavy), transparent 4%);
       color: var(--label);
-      background: rgba(118,118,128,0.16);
       font-size: 14px;
-      font-weight: 650;
+      font-weight: 820;
       white-space: nowrap;
-      transition: transform 150ms var(--ease-out), background-color 160ms ease, box-shadow 160ms ease;
+      border: 1px solid color-mix(in srgb, var(--edge), transparent 20%);
+      box-shadow:
+        0 14px 34px var(--shadow-soft),
+        inset 0 1px 0 var(--inner-edge);
+      -webkit-backdrop-filter: blur(34px) saturate(1.7);
+      backdrop-filter: blur(34px) saturate(1.7);
+      transition:
+        transform 150ms var(--ease-spring),
+        box-shadow 180ms ease,
+        color 180ms ease;
+    }
+
+    .btn.icon-only {
+      width: 42px;
+      padding: 0;
+    }
+
+    .btn.preview-action {
+      padding-inline: 18px;
     }
 
     .btn svg {
-      width: 17px;
-      height: 17px;
-      flex: 0 0 17px;
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
     }
 
     .btn.primary {
       color: #fff;
-      background: var(--blue);
+      background: linear-gradient(180deg, #0A84FF, #007AFF);
+      box-shadow: 0 12px 28px color-mix(in srgb, var(--blue), transparent 68%);
     }
 
-    .btn.subtle {
-      width: 40px;
-      padding: 0;
+    .bounce {
+      animation: bounce-tap 260ms var(--ease-spring);
     }
 
-    .btn.danger {
-      color: #fff;
-      background: var(--red);
+    @keyframes bounce-tap {
+      0% { transform: scale(0.97); }
+      62% { transform: scale(1.025); }
+      100% { transform: scale(1); }
     }
 
     @media (hover: hover) and (pointer: fine) {
-      .select-row:hover,
-      .row:has(input:focus-visible),
-      .seg-option:hover,
-      .btn:hover {
-        background-color: rgba(118, 118, 128, 0.20);
-      }
-
-      .btn.primary:hover {
-        background-color: #0A84FF;
+      button:focus-visible,
+      input:focus-visible,
+      select:focus-visible,
+      textarea:focus-visible {
+        outline: 4px solid var(--ring);
+        outline-offset: 3px;
       }
     }
 
-    :focus-visible {
-      outline: 3px solid rgba(0, 122, 255, 0.42);
-      outline-offset: 2px;
+    .theme-btn:active,
+    .model-card:active,
+    .btn:active,
+    .row:active,
+    .panel-tab:active {
+      transform: scale(0.97);
+    }
+
+    @media (prefers-reduced-transparency: reduce) {
+      body,
+      body::before {
+        background: var(--bg);
+      }
+
+      .liquid,
+      .btn {
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+        background: var(--glass-heavy);
+      }
+    }
+
+    @media (prefers-contrast: more) {
+      :root {
+        --separator: currentColor;
+        --edge: color-mix(in srgb, var(--label), transparent 45%);
+        --glass: color-mix(in srgb, var(--bg), var(--label) 6%);
+        --glass-strong: color-mix(in srgb, var(--bg), var(--label) 9%);
+        --glass-heavy: color-mix(in srgb, var(--bg), var(--label) 12%);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 1ms !important;
+      }
     }
 
     @media (max-width: 1019px) {
-      .shell,
-      .action-align {
-        width: min(560px, calc(100vw - 32px));
+      .app {
+        width: min(640px, calc(100% - 32px));
       }
 
       .layout {
-        display: block;
-      }
-
-      .left-rail,
-      .right-rail {
         display: contents;
       }
 
-      .hero,
-      .warning-box,
-      .group {
+      .left-column {
+        position: static;
+        margin-top: 24px;
+        height: auto;
+        min-height: 220px;
         margin-bottom: 16px;
+      }
+
+      .settings {
+        margin-top: 0;
+      }
+
+      .action-align {
+        justify-content: center;
       }
     }
 
     @media (max-width: 599px) {
-      .shell {
-        width: 100%;
-        padding: 14px 12px 132px;
+      :root {
+        --nav-h: 58px;
       }
 
-      .action-align {
+      .app {
         width: 100%;
+        padding: 12px 12px 128px;
       }
 
-      .nav {
+      .top-controls {
         top: 8px;
-        margin-bottom: 18px;
+        right: 10px;
       }
 
-      .brand p,
       .status-pill {
+        min-height: 34px;
+        padding: 0;
+      }
+
+      .status-pill .status-copy {
         display: none;
       }
 
-      .hero h2 {
-        font-size: 30px;
+      .theme-switcher {
+        grid-template-columns: repeat(3, 34px);
+        gap: 4px;
+        padding: 0;
       }
 
-      .receiver-panel {
-        grid-template-columns: 58px minmax(0, 1fr);
-        min-height: 84px;
-        padding: 12px;
-        gap: 12px;
+      .theme-btn {
+        width: 34px;
+        height: 31px;
       }
 
-      .receiver-icon {
-        width: 56px;
-        height: 56px;
-        border-radius: 18px;
+      .receiver-card,
+      .settings-card {
+        padding: 18px;
       }
 
-      .receiver-icon svg {
-        width: 28px;
-        height: 28px;
+      .receiver-card {
+        min-height: 220px;
       }
 
-      .model-segment {
+      .receiver-visual {
+        min-height: 200px;
+        padding: 2px;
+        gap: 22px;
+      }
+
+      .receiver-name-input {
+        font-size: 32px;
+        padding-inline: 10px;
+      }
+
+      .obj-airport {
+        width: 142px;
+        height: 82px;
+        border-radius: 24px;
+      }
+
+      .obj-generic {
+        width: 106px;
+        height: 138px;
+        border-radius: 28px;
+      }
+
+      .obj-speaker,
+      .obj-speaker.gen1 {
+        width: 106px;
+        height: 136px;
+      }
+
+      .obj-speaker.mini {
+        width: 118px;
+        height: 118px;
+      }
+
+      .obj-tv {
+        width: 142px;
+        height: 92px;
+      }
+
+      .model-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
+      .model-card {
+        min-height: 112px;
+      }
+
       .row {
+        min-height: 56px;
         gap: 10px;
+        padding: 9px 12px;
+      }
+
+      .row-control {
+        max-width: 68%;
+      }
+
+      .range-wrap {
+        width: 190px;
+      }
+
+      .db-list {
+        padding: 9px;
+      }
+
+      .db-control {
+        padding: 12px;
+      }
+
+      .db-adjuster {
+        grid-template-columns: 36px minmax(0, 1fr) 36px;
+        gap: 9px;
+      }
+
+      .db-step {
+        width: 36px;
+        height: 36px;
+      }
+
+      .action-shell {
+        bottom: 10px;
+      }
+
+      .action-align {
+        width: calc(100% - 20px);
       }
 
       .toolbar {
-        gap: 8px;
-      }
-
-      .toolbar-status {
-        display: none;
+        display: flex;
+        justify-content: flex-end;
+        gap: 7px;
+        padding: 0;
       }
 
       .btn {
-        min-width: 40px;
-        padding: 0 11px;
+        min-height: 40px;
+        padding: 0 10px;
+      }
+
+      .btn.icon-only {
+        width: 40px;
+      }
+
+      .btn.preview-action {
+        padding-inline: 10px;
+      }
+
+      .preview-page-card {
+        min-height: calc(100vh - 92px);
+        padding: 18px;
+      }
+
+      .preview-page-card .code-box {
+        height: min(58vh, 520px);
+        min-height: 320px;
+      }
+
+      .preview-head {
+        align-items: flex-start;
       }
     }
   </style>
 </head>
 <body>
-  <main class="shell">
-    <nav class="nav glass" id="nav">
-      <div class="brand">
-        <div class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M6.5 14.5c2.6-2.2 8.4-2.2 11 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path d="M9 17c1.5-1.2 4.5-1.2 6 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path d="M12 20h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-            <path d="M4 11.5c4.2-3.7 11.8-3.7 16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  <div class="top-controls" id="topControls">
+    <div class="nav-actions">
+      <div class="status-pill" id="statusPill"><span class="dot"></span><span class="status-copy" id="statusShort">读取中</span></div>
+      <div class="theme-switcher" aria-label="外观模式">
+        <button class="theme-btn" type="button" data-theme-choice="light" title="浅色模式" aria-label="浅色模式">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
           </svg>
-        </div>
-        <div>
-          <h1>Shairport Sync</h1>
-          <p>UGREEN NAS AirPlay 2</p>
-        </div>
+        </button>
+        <button class="theme-btn" type="button" data-theme-choice="dark" title="深色模式" aria-label="深色模式">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20.9 14.46A8.5 8.5 0 0 1 9.54 3.1a.9.9 0 0 0-1.07-1.2 10.25 10.25 0 1 0 13.63 13.63.9.9 0 0 0-1.2-1.07Z"></path>
+          </svg>
+        </button>
+        <button class="theme-btn" type="button" data-theme-choice="system" title="跟随系统" aria-label="跟随系统">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="13" rx="3"></rect><path d="M8 21h8M12 17v4"></path>
+          </svg>
+        </button>
       </div>
-      <div class="status-pill"><span class="dot"></span><span id="statusShort">读取中</span></div>
-    </nav>
+    </div>
+  </div>
 
-    <section class="layout">
-      <aside class="left-rail">
-        <section class="hero glass">
-          <div class="hero-top">
-            <span class="eyebrow">接收端在线</span>
-            <div>
-              <h2 id="deviceTitle">UGREEN AirPlay</h2>
-              <p>保存后会写入完整配置、更新机型标识，并重启接收端让 AirPlay 广播重新发布。</p>
-            </div>
-          </div>
-          <div class="receiver-panel">
-            <div class="receiver-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M6.5 14.5c2.6-2.2 8.4-2.2 11 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                <path d="M9 17c1.5-1.2 4.5-1.2 6 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                <path d="M12 20h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-                <path d="M4 11.5c4.2-3.7 11.8-3.7 16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <div class="receiver-copy">
-              <strong id="receiverName">Shairport Sync</strong>
-              <span id="receiverModel">等待读取当前机型标识</span>
-              <div class="signal-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-            </div>
-          </div>
-          <div class="summary-list">
-            <div class="summary-item"><span>当前图标</span><span id="modelSummary">-</span></div>
-            <div class="summary-item"><span>广播网口</span><span id="interfaceSummary">-</span></div>
-            <div class="summary-item"><span>音频输出</span><span id="audioSummary">-</span></div>
+  <main class="app">
+    <section class="view layout" id="configView">
+      <aside class="left-column">
+        <section class="receiver-card" id="receiverCard" aria-label="当前设备图标">
+          <div class="receiver-visual">
+            <div class="device-object" id="deviceObject" aria-hidden="true"></div>
+            <label class="receiver-name-field">
+              <span class="sr-only">设备名称</span>
+              <input class="receiver-name-input" id="name" maxlength="50" autocomplete="off" aria-label="设备名称">
+            </label>
           </div>
         </section>
-
-        <section class="warning-box" id="warnings"></section>
       </aside>
 
-      <div class="right-rail">
-        <section class="group glass">
-          <div class="group-head"><h3>设备</h3><span class="group-subtitle">名称与图标</span></div>
-          <div class="group-body">
-            <label class="row">
-              <span class="row-label">名称</span>
-              <span class="row-control"><input class="text-input" id="name" maxlength="50" autocomplete="off"></span>
-            </label>
-            <div class="row">
-              <span class="row-label">图标</span>
-              <span class="row-control"><div class="model-segment" id="modelSegment"></div></span>
-            </div>
+      <section class="settings">
+        <section class="settings-card liquid">
+          <div class="card-head">
+            <h3>AirPlay 图标</h3>
+            <span>机型标识</span>
           </div>
-          <p class="note">这是机型标识伪装，只影响 Apple 客户端选择图标；不会获得 Siri、HomePod 立体声组队、设为 Apple TV 默认输出等能力。连接后图标偶尔退回通用扬声器属于 iOS 端行为。</p>
+          <div class="model-grid" id="modelGrid"></div>
         </section>
 
-        <section class="group glass">
-          <div class="group-head"><h3>网络</h3><span class="group-subtitle">mDNS 广播</span></div>
-          <div class="group-body">
+        <section class="settings-card liquid">
+          <div class="card-head"><h3>网络</h3><span>mDNS 广播</span></div>
+          <div class="form-list">
             <label class="row select-row">
               <span class="row-label">广播网口</span>
               <span class="row-control"><span class="select-value" id="interfaceValue">未选择</span><span class="chevron"></span></span>
@@ -1103,9 +1681,9 @@
           <p class="note">多网口 NAS 必须选实际接线的网口。未指定时 avahi 会在所有网口广播，Apple 设备可能连到错误地址。</p>
         </section>
 
-        <section class="group glass">
-          <div class="group-head"><h3>音频</h3><span class="group-subtitle">ALSA 输出</span></div>
-          <div class="group-body">
+        <section class="settings-card liquid">
+          <div class="card-head"><h3>音频</h3><span>ALSA 输出</span></div>
+          <div class="form-list">
             <label class="row select-row">
               <span class="row-label">输出设备</span>
               <span class="row-control"><span class="select-value" id="audioValue">default</span><span class="chevron"></span></span>
@@ -1135,68 +1713,92 @@
               </span>
             </label>
           </div>
-          <p class="note">USB DAC 会显示为 ALSA 播放设备；HDMI 音频只有在 HDMI 端真正接入显示器、功放或采集设备后才会出现。硬件音量需要选择实际存在的 Mixer 控件。</p>
+          <p class="note">USB DAC 会显示为 ALSA 播放设备；HDMI 音频只有在 HDMI 端真正接入显示器、功放或采集设备后才会出现。</p>
         </section>
 
-        <section class="group glass">
-          <div class="group-head"><h3>高级</h3><span class="group-subtitle">安全边界</span></div>
-          <div class="group-body">
-            <label class="row">
-              <span class="row-label">音量范围 dB</span>
-              <span class="row-control"><input class="number-input" type="number" min="30" max="150" step="1" id="volume_range_db"></span>
-            </label>
-            <label class="row">
-              <span class="row-label">最大音量 dB</span>
-              <span class="row-control"><input class="number-input" type="number" max="0" step="0.5" id="volume_max_db"></span>
-            </label>
+        <section class="settings-card liquid">
+          <div class="card-head"><h3>高级</h3><span>安全边界</span></div>
+          <div class="form-list db-list">
+            <div class="db-control">
+              <div class="db-meta"><span>音量范围</span><strong id="volumeRangeDbValue">60 dB</strong></div>
+              <div class="db-adjuster">
+                <button class="db-step" type="button" data-db-target="volume_range_db" data-db-dir="-1" aria-label="减小音量范围">-</button>
+                <input class="db-range" type="range" min="30" max="150" step="1" id="volume_range_db" data-db-value="volumeRangeDbValue" aria-label="音量范围 dB">
+                <button class="db-step" type="button" data-db-target="volume_range_db" data-db-dir="1" aria-label="增大音量范围">+</button>
+              </div>
+            </div>
+            <div class="db-control">
+              <div class="db-meta"><span>最大音量</span><strong id="volumeMaxDbValue">0 dB</strong></div>
+              <div class="db-adjuster">
+                <button class="db-step" type="button" data-db-target="volume_max_db" data-db-dir="-1" aria-label="降低最大音量">-</button>
+                <input class="db-range" type="range" min="-60" max="0" step="0.5" id="volume_max_db" data-db-value="volumeMaxDbValue" aria-label="最大音量 dB">
+                <button class="db-step" type="button" data-db-target="volume_max_db" data-db-dir="1" aria-label="提高最大音量">+</button>
+              </div>
+            </div>
           </div>
           <p class="note">保存时会把范围收敛到 shairport-sync 可启动的合法值：`volume_range_db` 为 30-150，`volume_max_db` 不高于 0。</p>
         </section>
 
-        <section class="group glass">
-          <div class="group-head"><h3>附加配置</h3><span class="group-subtitle">高级段落</span></div>
-          <div class="group-body">
-            <div class="row" style="align-items: stretch;">
-              <textarea id="additional_config" spellcheck="false" placeholder="mqtt = { ... };&#10;dsp = { ... };"></textarea>
-            </div>
-          </div>
+        <section class="settings-card liquid">
+          <div class="card-head"><h3>附加配置</h3><span>高级段落</span></div>
+          <textarea id="additional_config" spellcheck="false" placeholder="mqtt = { ... };&#10;dsp = { ... };"></textarea>
           <p class="note">这里的内容会原样追加到生成文件末尾，适合 mqtt、dsp 等 shairport-sync 高级段落。</p>
         </section>
 
-        <section class="group glass">
-          <div class="group-head"><h3>预览与日志</h3><span class="group-subtitle">确认生效</span></div>
-          <div class="panel-tabs" role="tablist" aria-label="预览与日志">
-            <button class="panel-tab active" type="button" id="previewTab" data-pane="previewPane" role="tab" aria-selected="true">配置预览</button>
-            <button class="panel-tab" type="button" id="logsTab" data-pane="logsPane" role="tab" aria-selected="false">容器日志</button>
-          </div>
-          <div class="code-pane active" id="previewPane" role="tabpanel" aria-labelledby="previewTab">
-            <pre class="code-box" id="previewBox">配置预览会显示在这里。</pre>
-          </div>
-          <div class="code-pane" id="logsPane" role="tabpanel" aria-labelledby="logsTab">
-            <pre class="code-box" id="logsBox">容器日志会显示在这里。</pre>
+        <section class="settings-card liquid">
+          <div class="card-head"><h3>预览与日志</h3></div>
+          <div class="form-list">
+            <button class="row page-link" id="openPreviewPageBtn" type="button">
+              <span class="row-label">打开预览与日志</span>
+              <span class="row-control"><span class="select-value">配置预览、容器日志</span><span class="chevron"></span></span>
+            </button>
           </div>
         </section>
-      </div>
+      </section>
+    </section>
+
+    <section class="view preview-view" id="previewView" hidden>
+      <section class="settings-card liquid preview-page-card">
+        <div class="preview-head">
+          <div class="preview-title">
+            <h2>预览与日志</h2>
+            <p>查看生成配置和 shairport-sync 容器日志。</p>
+          </div>
+          <button class="btn" id="backToConfigBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><path d="m12 19-7-7 7-7"></path></svg>
+            返回
+          </button>
+        </div>
+        <div class="panel-tabs" role="tablist" aria-label="预览与日志">
+          <button class="panel-tab active" type="button" id="previewTab" data-pane="previewPane" role="tab" aria-selected="true">配置预览</button>
+          <button class="panel-tab" type="button" id="logsTab" data-pane="logsPane" role="tab" aria-selected="false">容器日志</button>
+        </div>
+        <div class="code-pane active" id="previewPane" role="tabpanel" aria-labelledby="previewTab">
+          <pre class="code-box" id="previewBox">配置预览会显示在这里。</pre>
+        </div>
+        <div class="code-pane" id="logsPane" role="tabpanel" aria-labelledby="logsTab">
+          <pre class="code-box" id="logsBox">容器日志会显示在这里。</pre>
+        </div>
+      </section>
     </section>
   </main>
 
   <div class="action-shell">
     <div class="action-align">
       <div class="toolbar">
-        <div class="toolbar-status" id="toolbarStatus">未保存</div>
-        <button class="btn subtle" id="refreshBtn" title="刷新">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <button class="btn icon-only" id="refreshBtn" title="刷新" aria-label="刷新" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-15.2 6.5"></path><path d="M3 12A9 9 0 0 1 18.2 5.5"></path><path d="M18 2v4h-4M6 22v-4h4"></path></svg>
         </button>
-        <button class="btn" id="previewBtn">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M5 4h14v16H5z" stroke="currentColor" stroke-width="2"/><path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          预览
+        <button class="btn preview-action" id="previewBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          预览与日志
         </button>
-        <button class="btn" id="restartBtn">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M12 4v8M7.05 7.05a7 7 0 1 0 9.9 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <button class="btn" id="restartBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v10"></path><path d="M18.4 6.6a8 8 0 1 1-12.8 0"></path></svg>
           重启
         </button>
-        <button class="btn primary" id="saveBtn">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M7 21v-8h10v8M7 3v5h8" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+        <button class="btn primary" id="saveBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"></path><path d="M17 21v-8H7v8M7 3v5h8"></path></svg>
           保存并重启
         </button>
       </div>
@@ -1214,21 +1816,88 @@
       return response.json();
     };
 
+    const THEME_KEY = "airplay-panel-theme";
+    const systemTheme = window.matchMedia("(prefers-color-scheme: dark)");
     let currentState = null;
     let selectedModel = "AirPort10,115";
+    let themePreference = localStorage.getItem(THEME_KEY) || "system";
 
-    const icon = {
-      "ShairportSync": ["通用", "扬声器"],
-      "AirPort10,115": ["AirPort", "推荐"],
-      "AudioAccessory5,1": ["mini", "HomePod"],
-      "AudioAccessory1,2": ["一代", "HomePod"],
-      "AudioAccessory6,1": ["二代", "HomePod"],
-      "AppleTV6,2": ["TV 4K", "Apple TV"]
+    const modelMeta = {
+      ShairportSync: {
+        short: "通用",
+        sub: "扬声器",
+        kind: "generic",
+        object: '<div class="obj-generic"></div>',
+        tile: '<span class="tile-device tile-generic"></span>'
+      },
+      "AirPort10,115": {
+        short: "AirPort",
+        sub: "推荐",
+        kind: "airport",
+        object: '<div class="obj-airport"></div>',
+        tile: '<span class="tile-device tile-airport"></span>'
+      },
+      "AudioAccessory5,1": {
+        short: "mini",
+        sub: "HomePod",
+        kind: "mini",
+        object: '<div class="obj-speaker mini"></div>',
+        tile: '<span class="tile-device tile-homepod tile-mini"></span>'
+      },
+      "AudioAccessory1,2": {
+        short: "一代",
+        sub: "HomePod",
+        kind: "gen1",
+        object: '<div class="obj-speaker gen1"></div>',
+        tile: '<span class="tile-device tile-homepod tile-gen1"></span>'
+      },
+      "AudioAccessory6,1": {
+        short: "二代",
+        sub: "HomePod",
+        kind: "gen2",
+        object: '<div class="obj-speaker"></div>',
+        tile: '<span class="tile-device tile-homepod tile-gen2"></span>'
+      },
+      "AppleTV6,2": {
+        short: "TV 4K",
+        sub: "Apple TV",
+        kind: "tv",
+        object: '<div class="obj-tv"></div>',
+        tile: '<span class="tile-device tile-tv"></span>'
+      }
     };
 
+    function bounce(el) {
+      if (!el) return;
+      el.classList.remove("bounce");
+      void el.offsetWidth;
+      el.classList.add("bounce");
+    }
+
+    function setTheme(choice, announce = false) {
+      themePreference = ["light", "dark", "system"].includes(choice) ? choice : "system";
+      localStorage.setItem(THEME_KEY, themePreference);
+      document.documentElement.dataset.themePreference = themePreference;
+      if (themePreference === "light" || themePreference === "dark") {
+        document.documentElement.dataset.theme = themePreference;
+      } else {
+        document.documentElement.removeAttribute("data-theme");
+      }
+      document.querySelectorAll(".theme-btn").forEach((button) => {
+        const active = button.dataset.themeChoice === themePreference;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-pressed", active ? "true" : "false");
+      });
+      if (announce) {
+        const labels = { light: "浅色模式", dark: "深色模式", system: "跟随系统" };
+        setStatus(`外观已切换为${labels[themePreference]}`);
+      }
+    }
+
     function setStatus(text, ok = true) {
-      $("toolbarStatus").textContent = text;
       $("statusShort").textContent = ok ? "就绪" : "注意";
+      $("statusPill").classList.toggle("attention", !ok);
+      bounce($("statusPill"));
     }
 
     function optionLabel(select, value) {
@@ -1236,11 +1905,67 @@
       return found ? found.textContent : (value || "未选择");
     }
 
+    function setText(id, value) {
+      const element = $(id);
+      if (element) element.textContent = value;
+    }
+
+    function showView(view) {
+      const preview = view === "preview";
+      $("configView").hidden = preview;
+      $("previewView").hidden = !preview;
+      document.body.dataset.view = preview ? "preview" : "config";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
     function updateRangeFill() {
       const range = $("volume_percent");
       const value = Number(range.value || 0);
       range.style.setProperty("--range-fill", `${value}%`);
       $("volumeValue").textContent = `${value}%`;
+    }
+
+    function clampNumber(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function formatDbValue(value) {
+      const rounded = Math.round(value * 10) / 10;
+      return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+    }
+
+    function updateDbControl(input) {
+      if (!input) return;
+      const min = Number(input.min || 0);
+      const max = Number(input.max || 100);
+      const raw = Number(input.value || min);
+      const value = Number.isFinite(raw) ? clampNumber(raw, min, max) : min;
+      const percent = max === min ? 0 : ((value - min) / (max - min)) * 100;
+      input.style.setProperty("--range-fill", `${clampNumber(percent, 0, 100)}%`);
+      const label = $(input.dataset.dbValue);
+      if (label) label.textContent = `${formatDbValue(value)} dB`;
+    }
+
+    function updateDbControls() {
+      updateDbControl($("volume_range_db"));
+      updateDbControl($("volume_max_db"));
+    }
+
+    function stepDbControl(button) {
+      const input = $(button.dataset.dbTarget);
+      if (!input) return;
+      const direction = Number(button.dataset.dbDir || 0);
+      const stepText = input.getAttribute("step") || "1";
+      const step = Number(stepText);
+      const decimals = stepText.includes(".") ? stepText.split(".")[1].length : 0;
+      const min = Number(input.min || 0);
+      const max = Number(input.max || 100);
+      const current = Number(input.value || min);
+      const next = clampNumber(current + (direction * step), min, max);
+      input.value = next.toFixed(decimals);
+      updateDbControl(input);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      setStatus("高级音量已修改，保存后生效");
     }
 
     function formSettings() {
@@ -1258,23 +1983,44 @@
       };
     }
 
-    function renderModelSegment(models) {
-      const segment = $("modelSegment");
-      segment.innerHTML = "";
+    function renderModelCards(models) {
+      const grid = $("modelGrid");
+      grid.innerHTML = "";
       models.forEach((model) => {
-        const parts = icon[model.id] || [model.label, model.id];
+        const meta = modelMeta[model.id] || {
+          short: model.label,
+          sub: model.detail || model.id,
+          kind: "generic",
+          object: modelMeta.ShairportSync.object,
+          tile: modelMeta.ShairportSync.tile
+        };
         const button = document.createElement("button");
         button.type = "button";
-        button.className = `seg-option${model.id === selectedModel ? " active" : ""}`;
+        button.className = `model-card${model.id === selectedModel ? " active" : ""}`;
         button.dataset.model = model.id;
-        button.innerHTML = `<strong>${parts[0]}</strong><span>${parts[1]}</span>`;
         button.title = `${model.label} · ${model.id}`;
+
+        const icon = document.createElement("span");
+        icon.className = "model-icon";
+        icon.innerHTML = meta.tile || modelMeta.ShairportSync.tile;
+
+        const title = document.createElement("span");
+        title.className = "model-title";
+        title.textContent = meta.short;
+
+        const detail = document.createElement("span");
+        detail.className = "model-detail";
+        detail.textContent = meta.sub;
+
+        button.append(icon, title, detail);
         button.addEventListener("click", () => {
           selectedModel = model.id;
-          renderModelSegment(currentState.models);
-          updateSummaries();
+          renderModelCards(currentState.models);
+          updateSummaries(true);
+          bounce(button);
+          setStatus(`已选择 ${model.id}，保存后生效`);
         });
-        segment.appendChild(button);
+        grid.appendChild(button);
       });
     }
 
@@ -1292,31 +2038,51 @@
         option.textContent = item.label || item.name || item;
         select.appendChild(option);
       });
+      if (value && ![...select.options].some((option) => option.value === value)) {
+        const current = document.createElement("option");
+        current.value = value;
+        current.textContent = value;
+        select.appendChild(current);
+      }
       select.value = value || "";
     }
 
     function renderWarnings(warnings) {
-      const box = $("warnings");
-      if (!warnings || warnings.length === 0) {
-        box.classList.remove("visible");
-        box.textContent = "";
-        return;
-      }
-      box.classList.add("visible");
-      box.textContent = warnings.join(" ");
+      void warnings;
     }
 
-    function updateSummaries() {
+    function updateDeviceVisual(animate = false) {
+      const meta = modelMeta[selectedModel] || modelMeta.ShairportSync;
+      const visualKey = meta.kind || selectedModel || "generic";
+      const object = $("deviceObject");
+      if (object.dataset.kind !== visualKey || !object.innerHTML) {
+        object.innerHTML = meta.object || modelMeta.ShairportSync.object;
+        object.dataset.kind = visualKey;
+        if (animate) {
+          object.classList.remove("is-swapping");
+          void object.offsetWidth;
+          object.classList.add("is-swapping");
+        }
+      }
+      $("receiverCard").dataset.modelKind = visualKey;
+    }
+
+    function updateSummaries(animateModel = false) {
       const model = (currentState?.models || []).find((item) => item.id === selectedModel);
-      $("deviceTitle").textContent = $("name").value || "UGREEN AirPlay";
-      $("receiverName").textContent = $("name").value || "Shairport Sync";
-      $("receiverModel").textContent = model ? `${model.label} · ${model.id}` : selectedModel;
-      $("modelSummary").textContent = model ? `${model.label} · ${model.id}` : selectedModel;
-      $("interfaceSummary").textContent = optionLabel($("interface"), $("interface").value);
-      $("audioSummary").textContent = optionLabel($("audio_device"), $("audio_device").value);
-      $("interfaceValue").textContent = optionLabel($("interface"), $("interface").value);
-      $("audioValue").textContent = optionLabel($("audio_device"), $("audio_device").value);
-      $("mixerValue").textContent = optionLabel($("mixer_control_name"), $("mixer_control_name").value) || "不使用";
+      setText("receiverModel", model ? `${model.label} · ${model.id}` : selectedModel);
+      setText("modelSummary", model ? `${model.label} · ${model.id}` : selectedModel);
+      setText("interfaceSummary", optionLabel($("interface"), $("interface").value));
+      setText("audioSummary", optionLabel($("audio_device"), $("audio_device").value));
+      setText("mixerSummary", optionLabel($("mixer_control_name"), $("mixer_control_name").value) || "不使用");
+      setText("interfaceValue", optionLabel($("interface"), $("interface").value));
+      setText("audioValue", optionLabel($("audio_device"), $("audio_device").value));
+      setText("mixerValue", optionLabel($("mixer_control_name"), $("mixer_control_name").value) || "不使用");
+      updateDeviceVisual(animateModel);
+      if (animateModel && $("receiverModel")) {
+        $("receiverModel").classList.remove("is-swapping");
+        void $("receiverModel").offsetWidth;
+        $("receiverModel").classList.add("is-swapping");
+      }
     }
 
     function showPane(paneId) {
@@ -1349,12 +2115,13 @@
       renderSelect($("interface"), ifaceOptions, settings.interface, "未选择");
       renderSelect($("audio_device"), currentState.audio_devices, settings.audio_device);
       renderSelect($("mixer_control_name"), currentState.mixer_controls, settings.mixer_control_name, "不使用");
-      renderModelSegment(currentState.models);
+      renderModelCards(currentState.models);
       renderWarnings(currentState.warnings);
 
       $("previewBox").textContent = currentState.config || "尚未生成配置。";
       await refreshLogs(false);
       updateRangeFill();
+      updateDbControls();
       updateSummaries();
       setStatus("已读取当前配置");
     }
@@ -1365,13 +2132,14 @@
       updateSummaries();
     }
 
-    async function previewConfig() {
+    async function previewConfig(openPage = true) {
       const result = await api("/api/preview", {
         method: "POST",
         body: JSON.stringify(formSettings())
       });
       $("previewBox").textContent = result.config;
       renderWarnings(result.warnings);
+      if (openPage) showView("preview");
       showPane("previewPane");
       setStatus("配置预览已更新");
     }
@@ -1385,6 +2153,7 @@
       $("previewBox").textContent = result.config;
       renderWarnings(result.warnings);
       await refreshLogs(false);
+      showView("preview");
       showPane("logsPane");
       setStatus(result.restart?.ok ? "已保存并重启" : "已保存，重启结果见日志", Boolean(result.restart?.ok));
     }
@@ -1393,6 +2162,7 @@
       setStatus("正在重启接收端");
       const result = await api("/api/restart", { method: "POST", body: "{}" });
       await refreshLogs(false);
+      showView("preview");
       showPane("logsPane");
       setStatus(result.ok ? "接收端已重启" : `重启失败：${result.error || "未知错误"}`, Boolean(result.ok));
     }
@@ -1400,7 +2170,10 @@
     async function refreshLogs(updateStatus = true) {
       const result = await api("/api/logs?lines=140");
       $("logsBox").textContent = result.ok ? (result.logs || "暂无日志。") : `读取日志失败：${result.error}`;
-      if (updateStatus) showPane("logsPane");
+      if (updateStatus) {
+        showView("preview");
+        showPane("logsPane");
+      }
       if (updateStatus) setStatus(result.ok ? "日志已刷新" : "日志读取失败", Boolean(result.ok));
     }
 
@@ -1413,27 +2186,68 @@
       setStatus(result.ok ? "硬件音量已更新" : `音量未应用：${result.error || "检查 Mixer 控件"}`, Boolean(result.ok));
     }
 
-    ["name", "interface", "audio_device", "mixer_control_name", "volume_range_db", "volume_max_db", "ignore_volume_control", "additional_config"].forEach((id) => {
-      $(id).addEventListener("input", updateSummaries);
-      $(id).addEventListener("change", updateSummaries);
-    });
+    function bindEvents() {
+      document.querySelectorAll(".theme-btn").forEach((button) => {
+        button.addEventListener("click", () => {
+          setTheme(button.dataset.themeChoice, true);
+          bounce(button);
+        });
+      });
+      systemTheme.addEventListener("change", () => {
+        if (themePreference === "system") setTheme("system");
+      });
+      ["name", "interface", "audio_device", "mixer_control_name", "volume_range_db", "volume_max_db", "ignore_volume_control", "additional_config"].forEach((id) => {
+        $(id).addEventListener("input", () => updateSummaries());
+        $(id).addEventListener("change", () => updateSummaries());
+      });
+      $("name").addEventListener("input", () => setStatus("名称已修改，保存后生效"));
+      $("audio_device").addEventListener("change", refreshMixers);
+      $("volume_percent").addEventListener("input", updateRangeFill);
+      $("volume_percent").addEventListener("change", applyVolume);
+      ["volume_range_db", "volume_max_db"].forEach((id) => {
+        $(id).addEventListener("input", updateDbControls);
+        $(id).addEventListener("change", () => setStatus("高级音量已修改，保存后生效"));
+      });
+      document.querySelectorAll(".db-step").forEach((button) => {
+        button.addEventListener("click", () => {
+          bounce(button);
+          stepDbControl(button);
+        });
+      });
+      $("previewBtn").addEventListener("click", () => { bounce($("previewBtn")); previewConfig(true); });
+      $("openPreviewPageBtn").addEventListener("click", () => { bounce($("openPreviewPageBtn")); previewConfig(true); });
+      $("backToConfigBtn").addEventListener("click", () => { bounce($("backToConfigBtn")); showView("config"); });
+      $("saveBtn").addEventListener("click", () => { bounce($("saveBtn")); saveAndRestart(); });
+      $("restartBtn").addEventListener("click", () => { bounce($("restartBtn")); restartOnly(); });
+      $("refreshBtn").addEventListener("click", () => {
+        bounce($("refreshBtn"));
+        const previewOpen = !$("previewView").hidden;
+        const activePane = document.querySelector(".panel-tab.active")?.dataset.pane;
+        if (previewOpen && activePane === "logsPane") {
+          refreshLogs();
+        } else {
+          refreshState();
+        }
+      });
+      document.querySelectorAll(".panel-tab").forEach((tab) => {
+        tab.addEventListener("click", () => {
+          bounce(tab);
+          showPane(tab.dataset.pane);
+          if (tab.dataset.pane === "logsPane") refreshLogs(false);
+        });
+      });
+    }
 
-    $("audio_device").addEventListener("change", refreshMixers);
-    $("volume_percent").addEventListener("input", updateRangeFill);
-    $("volume_percent").addEventListener("change", applyVolume);
-    $("previewBtn").addEventListener("click", previewConfig);
-    $("saveBtn").addEventListener("click", saveAndRestart);
-    $("restartBtn").addEventListener("click", restartOnly);
-    $("refreshBtn").addEventListener("click", refreshState);
-    document.querySelectorAll(".panel-tab").forEach((tab) => {
-      tab.addEventListener("click", () => showPane(tab.dataset.pane));
-    });
-
-    window.addEventListener("scroll", () => {
-      $("nav").classList.toggle("scrolled", window.scrollY > 24);
-    }, { passive: true });
-
+    setTheme(themePreference);
+    bindEvents();
+    updateDeviceVisual();
     refreshState().catch((error) => {
+      currentState = { models: Object.keys(modelMeta).map((id) => ({ id, label: modelMeta[id].short })) };
+      renderModelCards(currentState.models);
+      renderWarnings([]);
+      updateRangeFill();
+      updateDbControls();
+      updateSummaries();
       setStatus(`读取失败：${error.message}`, false);
       $("previewBox").textContent = String(error.stack || error.message || error);
     });
