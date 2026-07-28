@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
   <title>Shairport Sync</title>
   <style>
     :root {
@@ -19,8 +20,12 @@
       --green: #34C759;
       --red: #FF3B30;
       --orange: #FF9500;
+      --purple: #AF52DE;
       --fill: rgba(120, 120, 128, 0.16);
       --shadow: rgba(31, 41, 55, 0.15);
+      --card-line: rgba(255, 255, 255, 0.46);
+      --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+      --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
       --radius-card: 26px;
       --radius-inner: 16px;
       --page-max: 1180px;
@@ -39,6 +44,7 @@
         --separator: rgba(84, 84, 88, 0.56);
         --fill: rgba(118, 118, 128, 0.28);
         --shadow: rgba(0, 0, 0, 0.38);
+        --card-line: rgba(255, 255, 255, 0.18);
       }
     }
 
@@ -118,7 +124,7 @@
 
     .glass {
       background: var(--system-surface);
-      border: 1px solid rgba(255, 255, 255, 0.44);
+      border: 1px solid var(--card-line);
       box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.52),
         inset 0 -18px 36px rgba(255, 255, 255, 0.08),
@@ -145,6 +151,17 @@
       }
     }
 
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
     .nav {
       position: sticky;
       top: 14px;
@@ -157,7 +174,7 @@
       margin-bottom: 26px;
       padding: 11px 16px;
       border-radius: 27px;
-      transition: max-width 220ms ease, transform 220ms ease, padding 220ms ease;
+      transition: max-width 220ms var(--ease-out), transform 220ms var(--ease-out), padding 220ms var(--ease-out), box-shadow 220ms ease;
     }
 
     .nav.scrolled {
@@ -245,8 +262,59 @@
     }
 
     .hero {
+      position: relative;
+      overflow: hidden;
       border-radius: var(--radius-card);
-      padding: 24px;
+      padding: 22px;
+      min-height: 360px;
+      display: grid;
+      align-content: space-between;
+      gap: 20px;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.34), transparent 40%),
+        radial-gradient(ellipse at 72% 16%, rgba(0, 122, 255, 0.14), transparent 42%),
+        radial-gradient(ellipse at 12% 88%, rgba(52, 199, 89, 0.12), transparent 38%);
+      pointer-events: none;
+    }
+
+    .hero > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-top {
+      display: grid;
+      gap: 16px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      width: fit-content;
+      min-height: 28px;
+      padding: 0 10px;
+      border-radius: 999px;
+      color: var(--secondary);
+      background: rgba(118, 118, 128, 0.13);
+      font-size: 12px;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 4px rgba(52, 199, 89, 0.14);
     }
 
     .hero h2 {
@@ -264,10 +332,90 @@
       line-height: 1.45;
     }
 
+    .receiver-panel {
+      display: grid;
+      grid-template-columns: 74px minmax(0, 1fr);
+      gap: 14px;
+      align-items: center;
+      min-height: 102px;
+      padding: 14px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.36);
+      border: 1px solid rgba(255, 255, 255, 0.34);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.38);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .receiver-panel {
+        background: rgba(0, 0, 0, 0.18);
+        border-color: rgba(255, 255, 255, 0.13);
+      }
+    }
+
+    .receiver-icon {
+      position: relative;
+      width: 70px;
+      height: 70px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      border-radius: 22px;
+      background: linear-gradient(145deg, #0A84FF, #30D158);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.44),
+        0 16px 34px rgba(0, 122, 255, 0.24);
+    }
+
+    .receiver-icon svg {
+      width: 34px;
+      height: 34px;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.18));
+    }
+
+    .receiver-copy {
+      min-width: 0;
+    }
+
+    .receiver-copy strong {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 15px;
+      line-height: 1.25;
+    }
+
+    .receiver-copy span {
+      display: block;
+      margin-top: 5px;
+      color: var(--secondary);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .signal-bars {
+      display: flex;
+      align-items: end;
+      gap: 4px;
+      height: 18px;
+      margin-top: 11px;
+    }
+
+    .signal-bars i {
+      width: 7px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, var(--green), var(--blue));
+      opacity: 0.92;
+    }
+
+    .signal-bars i:nth-child(1) { height: 7px; }
+    .signal-bars i:nth-child(2) { height: 11px; }
+    .signal-bars i:nth-child(3) { height: 15px; }
+    .signal-bars i:nth-child(4) { height: 18px; }
+
     .summary-list {
       display: grid;
       gap: 10px;
-      margin-top: 20px;
     }
 
     .summary-item {
@@ -278,7 +426,8 @@
       min-height: 42px;
       padding: 9px 12px;
       border-radius: var(--radius-inner);
-      background: rgba(118, 118, 128, 0.12);
+      background: rgba(118, 118, 128, 0.13);
+      border: 1px solid rgba(255, 255, 255, 0.18);
     }
 
     .summary-item span:first-child {
@@ -305,6 +454,7 @@
       border: 1px solid rgba(255, 204, 0, 0.36);
       font-size: 13px;
       line-height: 1.45;
+      box-shadow: 0 16px 42px rgba(255, 204, 0, 0.12);
     }
 
     @media (prefers-color-scheme: dark) {
@@ -321,10 +471,15 @@
     .group {
       border-radius: var(--radius-card);
       overflow: hidden;
+      transition: transform 180ms var(--ease-out), box-shadow 180ms ease;
     }
 
     .group-head {
-      padding: 18px 20px 10px;
+      padding: 17px 20px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
     }
 
     .group-head h3 {
@@ -333,6 +488,13 @@
       line-height: 1.2;
       font-weight: 700;
       letter-spacing: 0;
+    }
+
+    .group-subtitle {
+      color: var(--secondary);
+      font-size: 12px;
+      line-height: 1.2;
+      white-space: nowrap;
     }
 
     .group-body {
@@ -355,6 +517,7 @@
       min-height: 54px;
       padding: 8px 12px;
       gap: 14px;
+      transition: background-color 160ms ease;
     }
 
     .row + .row {
@@ -388,6 +551,7 @@
       background: transparent;
       font-size: 16px;
       line-height: 1.3;
+      caret-color: var(--blue);
     }
 
     .number-input {
@@ -436,21 +600,22 @@
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 6px;
-      padding: 4px;
+      padding: 5px;
       width: 100%;
       border-radius: var(--radius-inner);
       background: rgba(118, 118, 128, 0.18);
     }
 
     .seg-option {
+      position: relative;
       min-width: 0;
-      min-height: 56px;
-      padding: 7px 8px;
+      min-height: 58px;
+      padding: 8px;
       color: var(--secondary);
       background: transparent;
       border-radius: 12px;
       text-align: center;
-      transition: background 160ms ease, color 160ms ease, box-shadow 160ms ease;
+      transition: transform 150ms var(--ease-out), background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
     }
 
     .seg-option strong,
@@ -482,6 +647,12 @@
       box-shadow: 0 6px 18px rgba(0, 0, 0, 0.10), inset 0 1px 0 rgba(255,255,255,0.42);
     }
 
+    .seg-option:active,
+    .btn:active,
+    .select-row:active {
+      transform: scale(0.97);
+    }
+
     .switch {
       position: relative;
       width: 51px;
@@ -501,7 +672,7 @@
       inset: 0;
       border-radius: 999px;
       background: rgba(120, 120, 128, 0.32);
-      transition: background 180ms ease;
+      transition: background-color 180ms ease;
     }
 
     .switch-track::after {
@@ -514,7 +685,7 @@
       border-radius: 50%;
       background: #fff;
       box-shadow: 0 3px 8px rgba(0,0,0,0.22), 0 1px 1px rgba(0,0,0,0.10);
-      transition: transform 180ms ease;
+      transition: transform 180ms var(--ease-out);
     }
 
     .switch input:checked + .switch-track {
@@ -590,10 +761,48 @@
       line-height: 1.45;
     }
 
+    .panel-tabs {
+      margin: 0 10px 10px;
+      padding: 4px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 4px;
+      border-radius: var(--radius-inner);
+      background: rgba(118, 118, 128, 0.16);
+    }
+
+    .panel-tab {
+      min-height: 34px;
+      border-radius: 12px;
+      color: var(--secondary);
+      background: transparent;
+      font-size: 13px;
+      font-weight: 650;
+      transition: transform 150ms var(--ease-out), background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+    }
+
+    .panel-tab.active {
+      color: var(--label);
+      background: var(--system-surface-strong);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.38), 0 5px 16px rgba(0,0,0,0.10);
+    }
+
+    .panel-tab:active {
+      transform: scale(0.97);
+    }
+
+    .code-pane {
+      display: none;
+    }
+
+    .code-pane.active {
+      display: block;
+    }
+
     .code-box {
       margin: 0 10px 10px;
-      padding: 12px;
-      max-height: 320px;
+      padding: 14px;
+      max-height: 380px;
       overflow: auto;
       border-radius: var(--radius-inner);
       color: var(--label);
@@ -603,6 +812,7 @@
       line-height: 1.45;
       white-space: pre-wrap;
       word-break: break-word;
+      border: 1px solid rgba(255, 255, 255, 0.16);
     }
 
     @media (prefers-color-scheme: dark) {
@@ -681,6 +891,7 @@
       font-size: 14px;
       font-weight: 650;
       white-space: nowrap;
+      transition: transform 150ms var(--ease-out), background-color 160ms ease, box-shadow 160ms ease;
     }
 
     .btn svg {
@@ -768,6 +979,24 @@
         font-size: 30px;
       }
 
+      .receiver-panel {
+        grid-template-columns: 58px minmax(0, 1fr);
+        min-height: 84px;
+        padding: 12px;
+        gap: 12px;
+      }
+
+      .receiver-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 18px;
+      }
+
+      .receiver-icon svg {
+        width: 28px;
+        height: 28px;
+      }
+
       .model-segment {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
@@ -814,8 +1043,28 @@
     <section class="layout">
       <aside class="left-rail">
         <section class="hero glass">
-          <h2 id="deviceTitle">UGREEN AirPlay</h2>
-          <p>保存后会写入完整配置、更新机型标识，并重启接收端让 AirPlay 广播重新发布。</p>
+          <div class="hero-top">
+            <span class="eyebrow">接收端在线</span>
+            <div>
+              <h2 id="deviceTitle">UGREEN AirPlay</h2>
+              <p>保存后会写入完整配置、更新机型标识，并重启接收端让 AirPlay 广播重新发布。</p>
+            </div>
+          </div>
+          <div class="receiver-panel">
+            <div class="receiver-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M6.5 14.5c2.6-2.2 8.4-2.2 11 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M9 17c1.5-1.2 4.5-1.2 6 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M12 20h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                <path d="M4 11.5c4.2-3.7 11.8-3.7 16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="receiver-copy">
+              <strong id="receiverName">Shairport Sync</strong>
+              <span id="receiverModel">等待读取当前机型标识</span>
+              <div class="signal-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+            </div>
+          </div>
           <div class="summary-list">
             <div class="summary-item"><span>当前图标</span><span id="modelSummary">-</span></div>
             <div class="summary-item"><span>广播网口</span><span id="interfaceSummary">-</span></div>
@@ -828,7 +1077,7 @@
 
       <div class="right-rail">
         <section class="group glass">
-          <div class="group-head"><h3>设备</h3></div>
+          <div class="group-head"><h3>设备</h3><span class="group-subtitle">名称与图标</span></div>
           <div class="group-body">
             <label class="row">
               <span class="row-label">名称</span>
@@ -843,7 +1092,7 @@
         </section>
 
         <section class="group glass">
-          <div class="group-head"><h3>网络</h3></div>
+          <div class="group-head"><h3>网络</h3><span class="group-subtitle">mDNS 广播</span></div>
           <div class="group-body">
             <label class="row select-row">
               <span class="row-label">广播网口</span>
@@ -855,7 +1104,7 @@
         </section>
 
         <section class="group glass">
-          <div class="group-head"><h3>音频</h3></div>
+          <div class="group-head"><h3>音频</h3><span class="group-subtitle">ALSA 输出</span></div>
           <div class="group-body">
             <label class="row select-row">
               <span class="row-label">输出设备</span>
@@ -890,7 +1139,7 @@
         </section>
 
         <section class="group glass">
-          <div class="group-head"><h3>高级</h3></div>
+          <div class="group-head"><h3>高级</h3><span class="group-subtitle">安全边界</span></div>
           <div class="group-body">
             <label class="row">
               <span class="row-label">音量范围 dB</span>
@@ -905,7 +1154,7 @@
         </section>
 
         <section class="group glass">
-          <div class="group-head"><h3>附加配置</h3></div>
+          <div class="group-head"><h3>附加配置</h3><span class="group-subtitle">高级段落</span></div>
           <div class="group-body">
             <div class="row" style="align-items: stretch;">
               <textarea id="additional_config" spellcheck="false" placeholder="mqtt = { ... };&#10;dsp = { ... };"></textarea>
@@ -915,9 +1164,17 @@
         </section>
 
         <section class="group glass">
-          <div class="group-head"><h3>预览与日志</h3></div>
-          <pre class="code-box" id="previewBox">配置预览会显示在这里。</pre>
-          <pre class="code-box" id="logsBox">容器日志会显示在这里。</pre>
+          <div class="group-head"><h3>预览与日志</h3><span class="group-subtitle">确认生效</span></div>
+          <div class="panel-tabs" role="tablist" aria-label="预览与日志">
+            <button class="panel-tab active" type="button" id="previewTab" data-pane="previewPane" role="tab" aria-selected="true">配置预览</button>
+            <button class="panel-tab" type="button" id="logsTab" data-pane="logsPane" role="tab" aria-selected="false">容器日志</button>
+          </div>
+          <div class="code-pane active" id="previewPane" role="tabpanel" aria-labelledby="previewTab">
+            <pre class="code-box" id="previewBox">配置预览会显示在这里。</pre>
+          </div>
+          <div class="code-pane" id="logsPane" role="tabpanel" aria-labelledby="logsTab">
+            <pre class="code-box" id="logsBox">容器日志会显示在这里。</pre>
+          </div>
         </section>
       </div>
     </section>
@@ -1052,12 +1309,25 @@
     function updateSummaries() {
       const model = (currentState?.models || []).find((item) => item.id === selectedModel);
       $("deviceTitle").textContent = $("name").value || "UGREEN AirPlay";
+      $("receiverName").textContent = $("name").value || "Shairport Sync";
+      $("receiverModel").textContent = model ? `${model.label} · ${model.id}` : selectedModel;
       $("modelSummary").textContent = model ? `${model.label} · ${model.id}` : selectedModel;
       $("interfaceSummary").textContent = optionLabel($("interface"), $("interface").value);
       $("audioSummary").textContent = optionLabel($("audio_device"), $("audio_device").value);
       $("interfaceValue").textContent = optionLabel($("interface"), $("interface").value);
       $("audioValue").textContent = optionLabel($("audio_device"), $("audio_device").value);
       $("mixerValue").textContent = optionLabel($("mixer_control_name"), $("mixer_control_name").value) || "不使用";
+    }
+
+    function showPane(paneId) {
+      document.querySelectorAll(".panel-tab").forEach((tab) => {
+        const active = tab.dataset.pane === paneId;
+        tab.classList.toggle("active", active);
+        tab.setAttribute("aria-selected", active ? "true" : "false");
+      });
+      document.querySelectorAll(".code-pane").forEach((pane) => {
+        pane.classList.toggle("active", pane.id === paneId);
+      });
     }
 
     async function refreshState() {
@@ -1102,6 +1372,7 @@
       });
       $("previewBox").textContent = result.config;
       renderWarnings(result.warnings);
+      showPane("previewPane");
       setStatus("配置预览已更新");
     }
 
@@ -1114,6 +1385,7 @@
       $("previewBox").textContent = result.config;
       renderWarnings(result.warnings);
       await refreshLogs(false);
+      showPane("logsPane");
       setStatus(result.restart?.ok ? "已保存并重启" : "已保存，重启结果见日志", Boolean(result.restart?.ok));
     }
 
@@ -1121,12 +1393,14 @@
       setStatus("正在重启接收端");
       const result = await api("/api/restart", { method: "POST", body: "{}" });
       await refreshLogs(false);
+      showPane("logsPane");
       setStatus(result.ok ? "接收端已重启" : `重启失败：${result.error || "未知错误"}`, Boolean(result.ok));
     }
 
     async function refreshLogs(updateStatus = true) {
       const result = await api("/api/logs?lines=140");
       $("logsBox").textContent = result.ok ? (result.logs || "暂无日志。") : `读取日志失败：${result.error}`;
+      if (updateStatus) showPane("logsPane");
       if (updateStatus) setStatus(result.ok ? "日志已刷新" : "日志读取失败", Boolean(result.ok));
     }
 
@@ -1151,6 +1425,9 @@
     $("saveBtn").addEventListener("click", saveAndRestart);
     $("restartBtn").addEventListener("click", restartOnly);
     $("refreshBtn").addEventListener("click", refreshState);
+    document.querySelectorAll(".panel-tab").forEach((tab) => {
+      tab.addEventListener("click", () => showPane(tab.dataset.pane));
+    });
 
     window.addEventListener("scroll", () => {
       $("nav").classList.toggle("scrolled", window.scrollY > 24);

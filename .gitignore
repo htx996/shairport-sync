@@ -2,6 +2,7 @@ AGENTS.md
 sources/
 __pycache__/
 .pytest_cache/
+.playwright-cli/
 *.pyc
 *.pyo
 .DS_Store
