@@ -335,11 +335,54 @@ def parse_cards() -> dict[int, dict[str, str]]:
     return cards
 
 
+def add_audio_device(devices: list[dict[str, Any]], seen: set[str], card_number: int, device_number: int, label: str) -> None:
+    device_id = f"hw:{card_number},{device_number}"
+    if device_id in seen:
+        return
+    devices.append({"id": device_id, "label": label, "card": card_number, "device": device_number})
+    seen.add(device_id)
+
+
+def discover_aplay_devices() -> list[dict[str, Any]]:
+    try:
+        completed = subprocess.run(["aplay", "-l"], capture_output=True, text=True, timeout=5, check=False)
+    except (FileNotFoundError, subprocess.SubprocessError):
+        return []
+    if completed.returncode != 0:
+        return []
+    return parse_aplay_devices(completed.stdout)
+
+
+def parse_aplay_devices(text: str) -> list[dict[str, Any]]:
+    devices: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    pattern = re.compile(
+        r"^\s*card\s+(\d+):\s*([^\[]+?)\s*\[([^\]]+)\],\s*device\s+(\d+):\s*([^\[]+?)\s*\[([^\]]+)\]"
+    )
+    for line in text.splitlines():
+        match = pattern.match(line)
+        if not match:
+            continue
+        card_number = int(match.group(1))
+        device_number = int(match.group(4))
+        card_label = match.group(3).strip() or match.group(2).strip()
+        pcm_label = match.group(6).strip() or match.group(5).strip()
+        label = f"hw:{card_number},{device_number} · {card_label}"
+        if pcm_label and pcm_label not in label:
+            label = f"{label} · {pcm_label}"
+        add_audio_device(devices, seen, card_number, device_number, label)
+    return devices
+
+
 def discover_audio_devices() -> list[dict[str, Any]]:
     cards = parse_cards()
     pcm_text = read_text_file(Path("/proc/asound/pcm"))
     devices: list[dict[str, Any]] = [{"id": "default", "label": "default · ALSA 默认输出", "card": None, "device": None}]
     seen = {"default"}
+
+    for device in discover_aplay_devices():
+        devices.append(device)
+        seen.add(device["id"])
 
     for line in pcm_text.splitlines():
         if "playback" not in line:
@@ -358,8 +401,7 @@ def discover_audio_devices() -> list[dict[str, Any]]:
         label = f"{device_id} · {card_label}"
         if pcm_label and pcm_label not in label:
             label = f"{label} · {pcm_label}"
-        devices.append({"id": device_id, "label": label, "card": card_number, "device": device_number})
-        seen.add(device_id)
+        add_audio_device(devices, seen, card_number, device_number, label)
     return devices
 
 

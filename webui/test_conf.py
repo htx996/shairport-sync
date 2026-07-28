@@ -9,6 +9,7 @@ from app import (
     escape_libconfig_string,
     generate_config,
     normalize_settings,
+    parse_aplay_devices,
     read_text_file,
 )
 
@@ -100,6 +101,31 @@ def test_discover_interfaces_filters_virtual_bridges(tmp_path, monkeypatch):
     monkeypatch.setenv("NET_CLASS_DIR", str(net_dir))
 
     assert [item["name"] for item in discover_interfaces()] == ["eth0", "eth1"]
+
+
+def test_parse_aplay_devices_lists_hdmi_and_usb_outputs():
+    output = """**** List of PLAYBACK Hardware Devices ****
+card 0: PCH [HDA Intel PCH], device 3: HDMI 0 [HDMI 0]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 0: PCH [HDA Intel PCH], device 7: HDMI 1 [HDMI 1]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 0: PCH [HDA Intel PCH], device 8: HDMI 2 [HDMI 2]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 0: PCH [HDA Intel PCH], device 9: HDMI 3 [HDMI 3]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 1: US05 [US05], device 0: USB Audio [USB Audio]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+"""
+
+    devices = parse_aplay_devices(output)
+
+    assert [item["id"] for item in devices] == ["hw:0,3", "hw:0,7", "hw:0,8", "hw:0,9", "hw:1,0"]
+    assert devices[-1]["label"] == "hw:1,0 · US05 · USB Audio"
 
 
 def test_empty_strings_use_safe_defaults():
