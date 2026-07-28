@@ -218,7 +218,9 @@ def normalize_settings(raw: dict[str, Any] | None) -> dict[str, Any]:
         "volume_range_db": clamp_int(source.get("volume_range_db"), 30, 150, DEFAULTS["volume_range_db"]),
         "volume_max_db": clamp_float(source.get("volume_max_db"), -144.0, 0.0, DEFAULTS["volume_max_db"]),
         "ignore_volume_control": normalize_yes_no(source.get("ignore_volume_control"), DEFAULTS["ignore_volume_control"]),
-        "equalizer_enabled": normalize_yes_no(source.get("equalizer_enabled"), DEFAULTS["equalizer_enabled"]),
+        # The WebUI convolution equalizer is intentionally disabled. It can cause
+        # underruns in the real-time AirPlay 2 audio path on NAS deployments.
+        "equalizer_enabled": "no",
         "equalizer_preset": equalizer_preset,
         "equalizer_bands": normalize_equalizer_bands(source.get("equalizer_bands")),
         "additional_config": additional_config,

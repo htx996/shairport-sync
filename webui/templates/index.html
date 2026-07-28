@@ -1109,85 +1109,6 @@
       width: 100%;
     }
 
-    .eq-panel {
-      margin-top: 12px;
-      display: grid;
-      gap: 12px;
-      transition: opacity 180ms ease;
-    }
-
-    .eq-panel.disabled {
-      opacity: 0.58;
-    }
-
-    .eq-sliders {
-      display: grid;
-      gap: 0;
-      padding: 0;
-      border-radius: var(--radius-inner);
-      background: color-mix(in srgb, var(--glass-control), transparent 8%);
-      border: 1px solid color-mix(in srgb, var(--edge), transparent 56%);
-      overflow: hidden;
-    }
-
-    .eq-band {
-      min-width: 0;
-      min-height: 48px;
-      display: grid;
-      grid-template-columns: 64px minmax(0, 1fr) 58px;
-      align-items: center;
-      gap: 12px;
-      padding: 9px 14px;
-      border-bottom: 1px solid var(--separator);
-    }
-
-    .eq-band:last-child {
-      border-bottom: 0;
-    }
-
-    .eq-value,
-    .eq-label {
-      max-width: 100%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      color: var(--secondary);
-      font-size: 12px;
-      font-weight: 760;
-      line-height: 1.1;
-    }
-
-    .eq-label {
-      justify-self: start;
-    }
-
-    .eq-value {
-      justify-self: end;
-      text-align: right;
-    }
-
-    .eq-range {
-      width: 100%;
-      min-width: 0;
-      --range-fill: 50%;
-    }
-
-    .eq-actions {
-      display: flex;
-      justify-content: flex-end;
-    }
-
-    .eq-reset {
-      min-height: 34px;
-      padding: 0 13px;
-      border-radius: 999px;
-      background: var(--fill);
-      color: var(--label);
-      font-size: 13px;
-      font-weight: 780;
-      box-shadow: inset 0 1px 0 color-mix(in srgb, var(--inner-edge), transparent 30%);
-    }
-
     .switch {
       position: relative;
       width: 51px;
@@ -1564,12 +1485,6 @@
         height: 36px;
       }
 
-      .eq-band {
-        grid-template-columns: 54px minmax(0, 1fr) 50px;
-        gap: 8px;
-        padding: 9px 10px;
-      }
-
       .action-align {
         width: calc(100% - 20px);
       }
@@ -1673,40 +1588,6 @@
             </label>
           </div>
           <p class="note">USB DAC 会显示为 ALSA 播放设备；HDMI 音频只有在 HDMI 端真正接入显示器、功放或采集设备后才会出现。</p>
-        </section>
-
-        <section class="settings-card liquid">
-          <div class="card-head"><h3>均衡器</h3><span>DSP 卷积</span></div>
-          <div class="form-list">
-            <label class="row">
-              <span class="row-label">启用均衡器</span>
-              <span class="row-control">
-                <span class="switch">
-                  <input type="checkbox" id="equalizer_enabled">
-                  <span class="switch-track"></span>
-                </span>
-              </span>
-            </label>
-            <label class="row select-row">
-              <span class="row-label">预设</span>
-              <span class="row-control"><span class="select-value" id="equalizerPresetValue">平直</span><span class="chevron"></span></span>
-              <select class="native-select" id="equalizer_preset">
-                <option value="flat">平直</option>
-                <option value="bass">低频增强</option>
-                <option value="vocal">人声清晰</option>
-                <option value="bright">高频明亮</option>
-                <option value="night">夜间</option>
-                <option value="custom">自定义</option>
-              </select>
-            </label>
-          </div>
-          <div class="eq-panel" id="equalizerPanel">
-            <div class="eq-sliders" id="equalizerSliders"></div>
-            <div class="eq-actions">
-              <button class="eq-reset" id="equalizerResetBtn" type="button">重置</button>
-            </div>
-          </div>
-          <p class="note">均衡器通过 shairport-sync DSP 卷积实现；保存时会生成 IR 文件并写入配置，保存并重启后生效。</p>
         </section>
 
         <section class="settings-card liquid">
@@ -1818,24 +1699,6 @@
       }
     };
 
-    const fallbackEqualizerBands = [
-      { id: "60", label: "60 Hz" },
-      { id: "150", label: "150 Hz" },
-      { id: "400", label: "400 Hz" },
-      { id: "1000", label: "1 kHz" },
-      { id: "2400", label: "2.4 kHz" },
-      { id: "6000", label: "6 kHz" },
-      { id: "12000", label: "12 kHz" }
-    ];
-
-    const equalizerPresets = {
-      flat: { "60": 0, "150": 0, "400": 0, "1000": 0, "2400": 0, "6000": 0, "12000": 0 },
-      bass: { "60": 5, "150": 3, "400": 1, "1000": 0, "2400": -1, "6000": 0, "12000": 1 },
-      vocal: { "60": -2, "150": -1, "400": 1, "1000": 3, "2400": 4, "6000": 2, "12000": 0 },
-      bright: { "60": -1, "150": 0, "400": 0, "1000": 1, "2400": 2, "6000": 4, "12000": 5 },
-      night: { "60": -5, "150": -3, "400": -1, "1000": 0, "2400": 1, "6000": -1, "12000": -3 }
-    };
-
     function bounce(el) {
       if (!el) return;
       el.classList.remove("bounce");
@@ -1895,12 +1758,6 @@
       return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
     }
 
-    function formatSignedDb(value) {
-      const rounded = Math.round(Number(value || 0) * 10) / 10;
-      const text = Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
-      return `${rounded > 0 ? "+" : ""}${text}`;
-    }
-
     function updateDbControl(input) {
       if (!input) return;
       const min = Number(input.min || 0);
@@ -1935,14 +1792,6 @@
       setStatus("高级音量已修改，保存并重启后生效");
     }
 
-    function equalizerBandsFromForm() {
-      const bands = {};
-      document.querySelectorAll(".eq-range").forEach((input) => {
-        bands[input.dataset.band] = Number(input.value || 0);
-      });
-      return bands;
-    }
-
     function formSettings() {
       return {
         name: $("name").value,
@@ -1953,82 +1802,11 @@
         volume_range_db: Number($("volume_range_db").value),
         volume_max_db: Number($("volume_max_db").value),
         ignore_volume_control: $("ignore_volume_control").checked ? "yes" : "no",
-        equalizer_enabled: $("equalizer_enabled").checked ? "yes" : "no",
-        equalizer_preset: $("equalizer_preset").value,
-        equalizer_bands: equalizerBandsFromForm(),
+        equalizer_enabled: "no",
+        equalizer_preset: "flat",
+        equalizer_bands: {},
         additional_config: $("additional_config").value
       };
-    }
-
-    function updateEqRange(input) {
-      const min = Number(input.min || -12);
-      const max = Number(input.max || 12);
-      const value = clampNumber(Number(input.value || 0), min, max);
-      input.value = String(value);
-      const percent = ((value - min) / (max - min)) * 100;
-      input.style.setProperty("--range-fill", `${clampNumber(percent, 0, 100)}%`);
-      const valueEl = input.closest(".eq-band")?.querySelector(".eq-value");
-      if (valueEl) valueEl.textContent = `${formatSignedDb(value)} dB`;
-    }
-
-    function updateEqualizerControls() {
-      document.querySelectorAll(".eq-range").forEach(updateEqRange);
-      const enabled = $("equalizer_enabled").checked;
-      $("equalizerPanel").classList.toggle("disabled", !enabled);
-      const presetOption = [...$("equalizer_preset").options].find((option) => option.value === $("equalizer_preset").value);
-      setText("equalizerPresetValue", presetOption ? presetOption.textContent : "自定义");
-    }
-
-    function applyEqualizerPreset(preset, announce = true) {
-      if (preset === "custom") {
-        $("equalizer_preset").value = "custom";
-        updateEqualizerControls();
-        if (announce) setStatus("均衡器已切换为自定义，保存并重启后生效");
-        return;
-      }
-      const gains = equalizerPresets[preset] || equalizerPresets.flat;
-      document.querySelectorAll(".eq-range").forEach((input) => {
-        input.value = String(gains[input.dataset.band] ?? 0);
-        updateEqRange(input);
-      });
-      $("equalizer_preset").value = preset in equalizerPresets ? preset : "flat";
-      updateEqualizerControls();
-      if (announce) setStatus("均衡器已修改，保存并重启后生效");
-    }
-
-    function renderEqualizerBands(bands, values = {}) {
-      const grid = $("equalizerSliders");
-      grid.innerHTML = "";
-      (bands && bands.length ? bands : fallbackEqualizerBands).forEach((band) => {
-        const wrapper = document.createElement("label");
-        wrapper.className = "eq-band";
-
-        const value = document.createElement("span");
-        value.className = "eq-value";
-
-        const input = document.createElement("input");
-        input.className = "eq-range";
-        input.type = "range";
-        input.min = "-12";
-        input.max = "12";
-        input.step = "1";
-        input.value = values[band.id] ?? 0;
-        input.dataset.band = band.id;
-        input.setAttribute("aria-label", `${band.label} 均衡器增益`);
-
-        const label = document.createElement("span");
-        label.className = "eq-label";
-        label.textContent = band.label;
-
-        input.addEventListener("input", () => {
-          $("equalizer_preset").value = "custom";
-          updateEqualizerControls();
-          setStatus("均衡器已修改，保存并重启后生效");
-        });
-        wrapper.append(label, input, value);
-        grid.appendChild(wrapper);
-        updateEqRange(input);
-      });
     }
 
     function renderModelCards(models) {
@@ -2141,19 +1919,15 @@
       $("volume_range_db").value = settings.volume_range_db;
       $("volume_max_db").value = settings.volume_max_db;
       $("ignore_volume_control").checked = settings.ignore_volume_control === "yes";
-      $("equalizer_enabled").checked = settings.equalizer_enabled === "yes";
-      $("equalizer_preset").value = settings.equalizer_preset || "flat";
       $("additional_config").value = settings.additional_config || "";
 
       renderSelect($("audio_device"), currentState.audio_devices, settings.audio_device);
       renderSelect($("mixer_control_name"), currentState.mixer_controls, settings.mixer_control_name, "不使用");
       renderModelCards(currentState.models);
-      renderEqualizerBands(currentState.equalizer_bands, settings.equalizer_bands || {});
       renderWarnings(currentState.warnings);
 
       updateRangeFill();
       updateDbControls();
-      updateEqualizerControls();
       updateSummaries();
       setStatus("已读取当前配置");
     }
@@ -2217,17 +1991,6 @@
       });
       $("name").addEventListener("input", () => setStatus("名称已修改，保存后生效"));
       $("audio_device").addEventListener("change", refreshMixers);
-      $("equalizer_enabled").addEventListener("change", () => {
-        updateEqualizerControls();
-        setStatus($("equalizer_enabled").checked ? "均衡器已启用，保存并重启后生效" : "均衡器已关闭，保存并重启后生效");
-      });
-      $("equalizer_preset").addEventListener("change", () => {
-        applyEqualizerPreset($("equalizer_preset").value);
-      });
-      $("equalizerResetBtn").addEventListener("click", () => {
-        bounce($("equalizerResetBtn"));
-        applyEqualizerPreset("flat");
-      });
       $("volume_percent").addEventListener("input", scheduleApplyVolume);
       $("volume_percent").addEventListener("change", () => applyVolume({ silentNoMixer: false }));
       ["volume_range_db", "volume_max_db"].forEach((id) => {
@@ -2256,8 +2019,6 @@
       renderWarnings([]);
       updateRangeFill();
       updateDbControls();
-      renderEqualizerBands(fallbackEqualizerBands, equalizerPresets.flat);
-      updateEqualizerControls();
       updateSummaries();
       setStatus(`读取失败：${error.message}`, false);
     });

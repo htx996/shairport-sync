@@ -193,28 +193,11 @@ Digital
 
 WebUI 容器安装了 `alsa-utils`，会用 `amixer` 应用硬件音量。
 
-## 均衡器
+## 均衡器与 DSP
 
-面板里的均衡器走 shairport-sync 的 DSP 卷积能力，不是 AirPlay 协议提供的功能。接收端镜像会使用：
+WebUI 不再提供内置均衡器。之前的实现走 shairport-sync 的 DSP 卷积链路，实际测试会导致 AirPlay 2 播放卡顿，因此正式面板会强制忽略历史保存的 `equalizer_enabled = "yes"`，也不会再自动生成 `dsp` 段或 IR 文件。
 
-```text
---with-convolution
-```
-
-并安装 `libsndfile` 运行库。启用均衡器后，WebUI 保存时会生成：
-
-```text
-config/equalizer_44100.wav
-config/equalizer_48000.wav
-```
-
-然后在 `shairport-sync.conf` 写入 `dsp` 段，指向这两个 IR 文件。7 段增益范围会收敛到 `-12 dB` 到 `+12 dB`。
-
-限制：
-
-- 均衡器改动不是实时生效，必须点“保存并重启”。
-- 如果你在“附加配置”里手写了另一个 `dsp = { ... };` 段，不要同时启用面板均衡器，否则会出现重复 `dsp` 配置。
-- 大幅提升多个频段可能导致削波；当前配置默认用 `convolution_gain = -3.0` 做保护。
+如果你确实需要 DSP，可以在“附加配置”里手写 shairport-sync 支持的高级段落，但这会进入实时音频路径，可能影响播放稳定性；建议优先保证 AirPlay 接收端稳定播放。
 
 ## 配置生成规则
 

@@ -1,5 +1,4 @@
 import re
-import wave
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -173,18 +172,17 @@ def test_equalizer_values_are_clamped_and_invalid_preset_falls_back():
         }
     )
 
-    assert settings["equalizer_enabled"] == "yes"
+    assert settings["equalizer_enabled"] == "no"
     assert settings["equalizer_preset"] == "flat"
     assert settings["equalizer_bands"]["60"] == 12.0
     assert settings["equalizer_bands"]["1000"] == -12.0
     assert settings["equalizer_bands"]["12000"] == 0.0
     config_text = generate_config(settings)
-    assert "dsp =" in config_text
-    assert 'convolution_enabled = "yes";' in config_text
-    assert "convolution_ir_files" in config_text
+    assert "dsp =" not in config_text
+    assert "convolution_ir_files" not in config_text
 
 
-def test_equalizer_ir_files_are_valid_wav_files(tmp_path, monkeypatch):
+def test_legacy_equalizer_settings_do_not_write_ir_files(tmp_path, monkeypatch):
     monkeypatch.setattr(app_module, "CONFIG_DIR", tmp_path)
 
     written = write_equalizer_ir_files(
@@ -194,12 +192,8 @@ def test_equalizer_ir_files_are_valid_wav_files(tmp_path, monkeypatch):
         }
     )
 
-    assert [path.name for path in written] == [f"equalizer_{sample_rate}.wav" for sample_rate in EQ_SAMPLE_RATES]
-    for path, sample_rate in zip(written, EQ_SAMPLE_RATES):
-        with wave.open(str(path), "rb") as wav_file:
-            assert wav_file.getnchannels() == 1
-            assert wav_file.getframerate() == sample_rate
-            assert wav_file.getnframes() > 0
+    assert written == []
+    assert not any((tmp_path / f"equalizer_{sample_rate}.wav").exists() for sample_rate in EQ_SAMPLE_RATES)
 
 
 def test_escape_libconfig_string_handles_backslash_before_quote():
