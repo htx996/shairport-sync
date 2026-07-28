@@ -22,6 +22,7 @@
 │   └── model.env
 ├── data/
 │   └── settings.json
+├── DEPLOY.md
 ├── NOTICE
 └── README.md
 ```
@@ -42,7 +43,9 @@ docker compose up -d --build
 http://NAS_IP:8099
 ```
 
-首次启动时如果 `config/` 是空目录，AirPlay 容器会自动写入一个可启动的默认 `shairport-sync.conf` 和 `model.env`，默认名称为 `AirPlay`。进面板后再选择音频输出、图标和均衡器，保存并重启生效。
+首次启动时如果 `config/` 是空目录，AirPlay 容器会自动写入一个可启动的默认 `shairport-sync.conf` 和 `model.env`，默认名称为 `AirPlay`。进面板后再选择音频输出和图标，保存并重启生效。
+
+完整的已发布镜像部署方式、可复制 YAML、UGOS 图形界面“搜索镜像下载部署”步骤见 [DEPLOY.md](DEPLOY.md)。
 
 如果要启用 HTTP Basic 认证，在 `docker-compose.yml` 的 `webui.environment` 里设置：
 
@@ -60,11 +63,14 @@ docker.io/${DOCKERHUB_NAMESPACE:-hanfu1997}/airplay:latest
 docker.io/${DOCKERHUB_NAMESPACE:-hanfu1997}/airplay-panel:latest
 ```
 
-发布到 Docker Hub 后可直接运行；如果以后换 namespace，再覆盖 `DOCKERHUB_NAMESPACE`：
+发布到 Docker Hub 后可直接运行：
 
 ```bash
+docker compose -f docker-compose.published.yml config
 docker compose -f docker-compose.published.yml up -d
 ```
+
+如果以后换 namespace，再覆盖 `DOCKERHUB_NAMESPACE`。完整部署说明和图形界面部署字段见 [DEPLOY.md](DEPLOY.md)。
 
 ## GitHub 编译并推送 Docker Hub
 
