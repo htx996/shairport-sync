@@ -80,7 +80,6 @@ DEFAULTS: dict[str, Any] = {
     "additional_config": "",
 }
 
-IFACE_RE = re.compile(r"^[A-Za-z0-9_.:-]+$")
 ALSA_DEVICE_RE = re.compile(r"^(default|(?:plug)?hw:[A-Za-z0-9_.:-]+(?:,[A-Za-z0-9_.:-]+)?|sysdefault(?::[A-Za-z0-9_.:-]+)?)$")
 BRIDGE_NAME_RE = re.compile(r"^br\d+$")
 
@@ -167,11 +166,7 @@ def normalize_settings(raw: dict[str, Any] | None) -> dict[str, Any]:
     if model not in MODEL_IDS:
         model = DEFAULTS["model"]
 
-    interface = clean_inline_text(source.get("interface"))
-    if interface and not IFACE_RE.match(interface):
-        interface = ""
-    if interface and is_excluded_interface_name(interface):
-        interface = ""
+    interface = ""
 
     audio_device = clean_inline_text(source.get("audio_device"))
     if not audio_device:
@@ -215,8 +210,6 @@ def generate_config(raw_settings: dict[str, Any] | None) -> str:
         f'  volume_range_db = {settings["volume_range_db"]};',
         f'  volume_max_db = {format_float(float(settings["volume_max_db"]))};',
     ]
-    if settings["interface"]:
-        lines.append(f'  interface = "{escape_libconfig_string(settings["interface"])}";')
     lines.extend(
         [
             "};",
@@ -434,11 +427,7 @@ def discover_mixer_controls(audio_device: str) -> list[str]:
 
 def build_warnings(settings: dict[str, Any], interfaces: list[dict[str, Any]], audio_devices: list[dict[str, Any]]) -> list[str]:
     warnings: list[str] = []
-    physical_interfaces = [iface for iface in interfaces if iface["name"]]
-    if len(physical_interfaces) > 1 and not settings["interface"]:
-        warnings.append("检测到多个物理网口，必须选择实际接线的广播网口，否则可能看得到但连不上。")
-    if settings["interface"] and settings["interface"] not in {iface["name"] for iface in physical_interfaces}:
-        warnings.append("当前保存的网口不在检测列表里，请重新选择。")
+    _ = interfaces
     if len(audio_devices) <= 1:
         warnings.append("没有检测到明确的 ALSA 播放设备；HDMI 只有接上显示/功放后才会出现，USB DAC 请确认已插入。")
     elif settings["audio_device"] not in {device["id"] for device in audio_devices}:

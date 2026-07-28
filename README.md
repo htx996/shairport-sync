@@ -168,7 +168,7 @@ UGOS / 群晖这类 NAS 通常已经有宿主机 `avahi-daemon`。compose 默认
 
 启动日志会明确打印走的是哪条路。设备在 AirPlay 列表里时有时无时，先看这里是否出现双 avahi 或 5353 争用。
 
-DXP4800 Pro 有双网口。面板会从 `/sys/class/net/` 列出物理网口，排除 `lo`、`docker*`、`br-*`、`veth*`，并显示 `operstate`。检测到多个网口时，请选择实际接线的那个，否则 Apple 设备可能看得到但连不上。
+面板不再要求选择广播网口，也不会写入 `general.interface`。接收端运行在 host 网络下，由宿主机网络栈和 avahi 处理 mDNS 广播。
 
 ## 音频输出
 
@@ -248,6 +248,6 @@ avahi mode: using host D-Bus/Avahi sockets; container avahi-daemon will not be s
 - 图标伪装不会带来 Apple 专有能力。
 - AirPlay 2 依赖 nqptp 独占 UDP 319/320；如果宿主机已有其他 PTP 服务会失败。
 - host 网络下不能同时让宿主和容器各跑一套 avahi。
-- 多网口必须指定实际接线网口。
+- 面板不绑定指定网口；多网口环境下如果发现 Apple 设备连到错误地址，需要在宿主机网络/avahi 层面处理路由和广播范围。
 - HDMI 音频设备不出现时，通常是 HDMI 端没有实际连接。
 - 目标机器是 x86_64；Dockerfile 会拒绝非 amd64 构建，避免 QEMU 慢速模拟编译。

@@ -1670,18 +1670,6 @@
         </section>
 
         <section class="settings-card liquid">
-          <div class="card-head"><h3>网络</h3><span>mDNS 广播</span></div>
-          <div class="form-list">
-            <label class="row select-row">
-              <span class="row-label">广播网口</span>
-              <span class="row-control"><span class="select-value" id="interfaceValue">未选择</span><span class="chevron"></span></span>
-              <select class="native-select" id="interface"></select>
-            </label>
-          </div>
-          <p class="note">多网口 NAS 必须选实际接线的网口。未指定时 avahi 会在所有网口广播，Apple 设备可能连到错误地址。</p>
-        </section>
-
-        <section class="settings-card liquid">
           <div class="card-head"><h3>音频</h3><span>ALSA 输出</span></div>
           <div class="form-list">
             <label class="row select-row">
@@ -1972,7 +1960,6 @@
       return {
         name: $("name").value,
         model: selectedModel,
-        interface: $("interface").value,
         audio_device: $("audio_device").value,
         mixer_control_name: $("mixer_control_name").value,
         volume_percent: Number($("volume_percent").value),
@@ -2071,10 +2058,8 @@
       const model = (currentState?.models || []).find((item) => item.id === selectedModel);
       setText("receiverModel", model ? `${model.label} · ${model.id}` : selectedModel);
       setText("modelSummary", model ? `${model.label} · ${model.id}` : selectedModel);
-      setText("interfaceSummary", optionLabel($("interface"), $("interface").value));
       setText("audioSummary", optionLabel($("audio_device"), $("audio_device").value));
       setText("mixerSummary", optionLabel($("mixer_control_name"), $("mixer_control_name").value) || "不使用");
-      setText("interfaceValue", optionLabel($("interface"), $("interface").value));
       setText("audioValue", optionLabel($("audio_device"), $("audio_device").value));
       setText("mixerValue", optionLabel($("mixer_control_name"), $("mixer_control_name").value) || "不使用");
       updateDeviceVisual(animateModel);
@@ -2108,11 +2093,6 @@
       $("ignore_volume_control").checked = settings.ignore_volume_control === "yes";
       $("additional_config").value = settings.additional_config || "";
 
-      const ifaceOptions = currentState.interfaces.map((iface) => ({
-        id: iface.name,
-        label: `${iface.name} · ${iface.operstate}${iface.speed ? ` · ${iface.speed}M` : ""}`
-      }));
-      renderSelect($("interface"), ifaceOptions, settings.interface, "未选择");
       renderSelect($("audio_device"), currentState.audio_devices, settings.audio_device);
       renderSelect($("mixer_control_name"), currentState.mixer_controls, settings.mixer_control_name, "不使用");
       renderModelCards(currentState.models);
@@ -2196,7 +2176,7 @@
       systemTheme.addEventListener("change", () => {
         if (themePreference === "system") setTheme("system");
       });
-      ["name", "interface", "audio_device", "mixer_control_name", "volume_range_db", "volume_max_db", "ignore_volume_control", "additional_config"].forEach((id) => {
+      ["name", "audio_device", "mixer_control_name", "volume_range_db", "volume_max_db", "ignore_volume_control", "additional_config"].forEach((id) => {
         $(id).addEventListener("input", () => updateSummaries());
         $(id).addEventListener("change", () => updateSummaries());
       });

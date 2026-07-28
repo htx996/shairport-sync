@@ -79,10 +79,11 @@ def test_invalid_enums_and_devices_fall_back():
     assert settings["interface"] == ""
 
 
-def test_bridge_interfaces_are_rejected():
+def test_interface_is_ignored_for_host_network_mode():
     assert normalize_settings({"interface": "bridge0"})["interface"] == ""
     assert normalize_settings({"interface": "br0"})["interface"] == ""
-    assert normalize_settings({"interface": "eth0"})["interface"] == "eth0"
+    assert normalize_settings({"interface": "eth0"})["interface"] == ""
+    assert "interface =" not in generate_config({"interface": "eth0"})
 
 
 def test_discover_interfaces_filters_virtual_bridges(tmp_path, monkeypatch):
