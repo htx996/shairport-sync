@@ -20,7 +20,7 @@ ensure_first_run_files() {
 // Use the WebUI for normal edits.
 general =
 {
-  name = "UGREEN AirPlay";
+  name = "AirPlay";
   output_backend = "alsa";
   mdns_backend = "avahi";
   ignore_volume_control = "no";

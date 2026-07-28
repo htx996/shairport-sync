@@ -1,9 +1,12 @@
 import re
+import wave
 from pathlib import Path
 from types import SimpleNamespace
 
+import app as app_module
 from app import (
     DEFAULTS,
+    EQ_SAMPLE_RATES,
     choose_shairport_container,
     discover_interfaces,
     escape_libconfig_string,
@@ -11,6 +14,7 @@ from app import (
     normalize_settings,
     parse_aplay_devices,
     read_text_file,
+    write_equalizer_ir_files,
 )
 
 
@@ -150,6 +154,52 @@ def test_empty_strings_use_safe_defaults():
 def test_default_name_is_plain_airplay():
     assert DEFAULTS["name"] == "AirPlay"
     assert normalize_settings({})["name"] == "AirPlay"
+
+
+def test_equalizer_is_disabled_by_default():
+    settings = normalize_settings({})
+
+    assert settings["equalizer_enabled"] == "no"
+    assert settings["equalizer_preset"] == "flat"
+    assert "dsp =" not in generate_config(settings)
+
+
+def test_equalizer_values_are_clamped_and_invalid_preset_falls_back():
+    settings = normalize_settings(
+        {
+            "equalizer_enabled": "yes",
+            "equalizer_preset": "evil",
+            "equalizer_bands": {"60": 99, "1000": -99, "12000": "bad"},
+        }
+    )
+
+    assert settings["equalizer_enabled"] == "yes"
+    assert settings["equalizer_preset"] == "flat"
+    assert settings["equalizer_bands"]["60"] == 12.0
+    assert settings["equalizer_bands"]["1000"] == -12.0
+    assert settings["equalizer_bands"]["12000"] == 0.0
+    config_text = generate_config(settings)
+    assert "dsp =" in config_text
+    assert 'convolution_enabled = "yes";' in config_text
+    assert "convolution_ir_files" in config_text
+
+
+def test_equalizer_ir_files_are_valid_wav_files(tmp_path, monkeypatch):
+    monkeypatch.setattr(app_module, "CONFIG_DIR", tmp_path)
+
+    written = write_equalizer_ir_files(
+        {
+            "equalizer_enabled": "yes",
+            "equalizer_bands": {"60": 6, "150": 3, "1000": 0, "6000": -2},
+        }
+    )
+
+    assert [path.name for path in written] == [f"equalizer_{sample_rate}.wav" for sample_rate in EQ_SAMPLE_RATES]
+    for path, sample_rate in zip(written, EQ_SAMPLE_RATES):
+        with wave.open(str(path), "rb") as wav_file:
+            assert wav_file.getnchannels() == 1
+            assert wav_file.getframerate() == sample_rate
+            assert wav_file.getnframes() > 0
 
 
 def test_escape_libconfig_string_handles_backslash_before_quote():

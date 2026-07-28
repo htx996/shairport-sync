@@ -42,7 +42,7 @@ docker compose up -d --build
 http://NAS_IP:8099
 ```
 
-首次启动时如果 `config/` 是空目录，AirPlay 容器会自动写入一个可启动的默认 `shairport-sync.conf` 和 `model.env`。进面板后再选择实际网口、音频输出和图标，保存并重启生效。
+首次启动时如果 `config/` 是空目录，AirPlay 容器会自动写入一个可启动的默认 `shairport-sync.conf` 和 `model.env`，默认名称为 `AirPlay`。进面板后再选择音频输出、图标和均衡器，保存并重启生效。
 
 如果要启用 HTTP Basic 认证，在 `docker-compose.yml` 的 `webui.environment` 里设置：
 
@@ -192,6 +192,29 @@ Digital
 ```
 
 WebUI 容器安装了 `alsa-utils`，会用 `amixer` 应用硬件音量。
+
+## 均衡器
+
+面板里的均衡器走 shairport-sync 的 DSP 卷积能力，不是 AirPlay 协议提供的功能。接收端镜像会使用：
+
+```text
+--with-convolution
+```
+
+并安装 `libsndfile` 运行库。启用均衡器后，WebUI 保存时会生成：
+
+```text
+config/equalizer_44100.wav
+config/equalizer_48000.wav
+```
+
+然后在 `shairport-sync.conf` 写入 `dsp` 段，指向这两个 IR 文件。7 段增益范围会收敛到 `-12 dB` 到 `+12 dB`。
+
+限制：
+
+- 均衡器改动不是实时生效，必须点“保存并重启”。
+- 如果你在“附加配置”里手写了另一个 `dsp = { ... };` 段，不要同时启用面板均衡器，否则会出现重复 `dsp` 配置。
+- 大幅提升多个频段可能导致削波；当前配置默认用 `convolution_gain = -3.0` 做保护。
 
 ## 配置生成规则
 

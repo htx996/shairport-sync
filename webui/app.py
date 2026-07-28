@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import hmac
 import json
+import math
 import os
 import re
 import shutil
+import struct
 import subprocess
 import time
+import wave
 from pathlib import Path
 from typing import Any
 
@@ -66,6 +69,19 @@ MODELS = [
     },
 ]
 MODEL_IDS = {item["id"] for item in MODELS}
+EQ_BANDS = [
+    {"id": "60", "label": "60 Hz", "freq": 60.0},
+    {"id": "150", "label": "150 Hz", "freq": 150.0},
+    {"id": "400", "label": "400 Hz", "freq": 400.0},
+    {"id": "1000", "label": "1 kHz", "freq": 1000.0},
+    {"id": "2400", "label": "2.4 kHz", "freq": 2400.0},
+    {"id": "6000", "label": "6 kHz", "freq": 6000.0},
+    {"id": "12000", "label": "12 kHz", "freq": 12000.0},
+]
+EQ_BAND_IDS = tuple(band["id"] for band in EQ_BANDS)
+EQ_SAMPLE_RATES = (44100, 48000)
+EQ_IR_LENGTH = 1025
+EQ_PRESETS = {"flat", "bass", "vocal", "bright", "night", "custom"}
 
 DEFAULTS: dict[str, Any] = {
     "name": "AirPlay",
@@ -77,6 +93,9 @@ DEFAULTS: dict[str, Any] = {
     "volume_range_db": 60,
     "volume_max_db": 0.0,
     "ignore_volume_control": "no",
+    "equalizer_enabled": "no",
+    "equalizer_preset": "flat",
+    "equalizer_bands": {band_id: 0.0 for band_id in EQ_BAND_IDS},
     "additional_config": "",
 }
 
@@ -149,6 +168,14 @@ def normalize_yes_no(value: Any, default: str = "no") -> str:
     return default
 
 
+def normalize_equalizer_bands(value: Any) -> dict[str, float]:
+    raw = value if isinstance(value, dict) else {}
+    normalized: dict[str, float] = {}
+    for band_id in EQ_BAND_IDS:
+        normalized[band_id] = clamp_float(raw.get(band_id), -12.0, 12.0, 0.0)
+    return normalized
+
+
 def is_excluded_interface_name(name: str) -> bool:
     excluded_prefixes = ("docker", "br-", "bridge", "veth", "virbr", "tap", "tun")
     return name == "lo" or name.startswith(excluded_prefixes) or BRIDGE_NAME_RE.match(name) is not None
@@ -175,6 +202,9 @@ def normalize_settings(raw: dict[str, Any] | None) -> dict[str, Any]:
         audio_device = DEFAULTS["audio_device"]
 
     mixer_control_name = clean_inline_text(source.get("mixer_control_name"))[:80]
+    equalizer_preset = clean_inline_text(source.get("equalizer_preset")).lower()
+    if equalizer_preset not in EQ_PRESETS:
+        equalizer_preset = DEFAULTS["equalizer_preset"]
     additional_config = str(source.get("additional_config") or "").replace("\x00", "")
     additional_config = additional_config[:65535]
 
@@ -188,6 +218,9 @@ def normalize_settings(raw: dict[str, Any] | None) -> dict[str, Any]:
         "volume_range_db": clamp_int(source.get("volume_range_db"), 30, 150, DEFAULTS["volume_range_db"]),
         "volume_max_db": clamp_float(source.get("volume_max_db"), -144.0, 0.0, DEFAULTS["volume_max_db"]),
         "ignore_volume_control": normalize_yes_no(source.get("ignore_volume_control"), DEFAULTS["ignore_volume_control"]),
+        "equalizer_enabled": normalize_yes_no(source.get("equalizer_enabled"), DEFAULTS["equalizer_enabled"]),
+        "equalizer_preset": equalizer_preset,
+        "equalizer_bands": normalize_equalizer_bands(source.get("equalizer_bands")),
         "additional_config": additional_config,
     }
 
@@ -195,6 +228,68 @@ def normalize_settings(raw: dict[str, Any] | None) -> dict[str, Any]:
 def format_float(value: float) -> str:
     text = f"{value:.2f}".rstrip("0").rstrip(".")
     return text if "." in text else f"{text}.0"
+
+
+def equalizer_ir_config_paths() -> list[str]:
+    return [str(CONFIG_DIR / f"equalizer_{sample_rate}.wav") for sample_rate in EQ_SAMPLE_RATES]
+
+
+def interpolate_equalizer_gain_db(frequency: float, bands: dict[str, float]) -> float:
+    points = [(float(band["freq"]), float(bands[band["id"]])) for band in EQ_BANDS]
+    if frequency <= points[0][0]:
+        return points[0][1]
+    for (left_freq, left_gain), (right_freq, right_gain) in zip(points, points[1:]):
+        if frequency <= right_freq:
+            position = (math.log(frequency) - math.log(left_freq)) / (math.log(right_freq) - math.log(left_freq))
+            return left_gain + ((right_gain - left_gain) * position)
+    return points[-1][1]
+
+
+def generate_equalizer_impulse(sample_rate: int, bands: dict[str, float], length: int = EQ_IR_LENGTH) -> list[float]:
+    half = (length - 1) // 2
+    response = []
+    for index in range(half + 1):
+        frequency = (index * sample_rate) / length
+        gain_db = interpolate_equalizer_gain_db(max(1.0, frequency), bands)
+        response.append(10 ** (gain_db / 20.0))
+
+    impulse: list[float] = []
+    center = (length - 1) / 2.0
+    for index in range(length):
+        offset = index - center
+        value = response[0]
+        for bin_index in range(1, half + 1):
+            value += 2.0 * response[bin_index] * math.cos((2.0 * math.pi * bin_index * offset) / length)
+        impulse.append(value / length)
+
+    peak = max(abs(value) for value in impulse) or 1.0
+    scale = min(0.95 / peak, 1.0)
+    return [value * scale for value in impulse]
+
+
+def write_wav_mono(path: Path, sample_rate: int, samples: list[float]) -> None:
+    frames = bytearray()
+    for sample in samples:
+        clamped = max(-1.0, min(1.0, sample))
+        frames.extend(struct.pack("<h", int(round(clamped * 32767))))
+    with wave.open(str(path), "wb") as wav_file:
+        wav_file.setnchannels(1)
+        wav_file.setsampwidth(2)
+        wav_file.setframerate(sample_rate)
+        wav_file.writeframes(bytes(frames))
+
+
+def write_equalizer_ir_files(settings: dict[str, Any]) -> list[Path]:
+    settings = normalize_settings(settings)
+    if settings["equalizer_enabled"] != "yes":
+        return []
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    written: list[Path] = []
+    for sample_rate in EQ_SAMPLE_RATES:
+        path = CONFIG_DIR / f"equalizer_{sample_rate}.wav"
+        write_wav_mono(path, sample_rate, generate_equalizer_impulse(sample_rate, settings["equalizer_bands"]))
+        written.append(path)
+    return written
 
 
 def generate_config(raw_settings: dict[str, Any] | None) -> str:
@@ -222,6 +317,22 @@ def generate_config(raw_settings: dict[str, Any] | None) -> str:
     if settings["mixer_control_name"]:
         lines.append(f'  mixer_control_name = "{escape_libconfig_string(settings["mixer_control_name"])}";')
     lines.extend(["};", ""])
+
+    if settings["equalizer_enabled"] == "yes":
+        ir_files = ",".join(equalizer_ir_config_paths())
+        lines.extend(
+            [
+                "dsp =",
+                "{",
+                '  convolution_enabled = "yes";',
+                "  convolution_thread_pool_size = 1;",
+                f'  convolution_ir_files = "{escape_libconfig_string(ir_files)}";',
+                "  convolution_gain = -3.0;",
+                "  convolution_max_length_in_seconds = 0.05;",
+                "};",
+                "",
+            ]
+        )
 
     extra = settings["additional_config"].strip()
     if extra:
@@ -271,6 +382,7 @@ def write_model_env(settings: dict[str, Any]) -> None:
 
 def write_config(settings: dict[str, Any]) -> None:
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    write_equalizer_ir_files(settings)
     if CONF_PATH.exists():
         shutil.copy2(CONF_PATH, CONF_PATH.with_name(CONF_PATH.name + ".bak"))
     tmp_path = CONF_PATH.with_name(CONF_PATH.name + ".tmp")
@@ -605,6 +717,7 @@ def api_state() -> Response:
         {
             "settings": settings,
             "models": MODELS,
+            "equalizer_bands": EQ_BANDS,
             "interfaces": interfaces,
             "audio_devices": audio_devices,
             "mixer_controls": mixer_controls,

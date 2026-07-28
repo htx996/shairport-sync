@@ -1,5 +1,5 @@
 {
-  "name": "UGREEN AirPlay",
+  "name": "AirPlay",
   "model": "AirPort10,115",
   "interface": "",
   "audio_device": "default",
@@ -8,6 +8,16 @@
   "volume_range_db": 60,
   "volume_max_db": 0.0,
   "ignore_volume_control": "no",
+  "equalizer_enabled": "no",
+  "equalizer_preset": "flat",
+  "equalizer_bands": {
+    "60": 0.0,
+    "150": 0.0,
+    "400": 0.0,
+    "1000": 0.0,
+    "2400": 0.0,
+    "6000": 0.0,
+    "12000": 0.0
+  },
   "additional_config": ""
 }
-

@@ -29,6 +29,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       libavahi-client-dev \
       libssl-dev \
       libsoxr-dev \
+      libsndfile1-dev \
       libplist-dev \
       libplist-utils \
       libsodium-dev \
@@ -83,6 +84,7 @@ RUN set -eux; \
     ./configure --prefix=/usr --sysconfdir=/etc \
       --with-alsa \
       --with-soxr \
+      --with-convolution \
       --with-avahi \
       --with-ssl=openssl \
       --with-airplay-2; \
@@ -103,6 +105,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       libavahi-client3 \
       libssl3 \
       libsoxr0 \
+      libsndfile1 \
       libplist3 \
       libsodium23 \
       uuid-runtime \
