@@ -1,0 +1,88 @@
+name: Check upstream updates
+
+on:
+  schedule:
+    # 02:23 Asia/Shanghai. GitHub cron uses UTC.
+    - cron: "23 18 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: upstream-sync
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Check Mike Brady upstream refs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Check upstream commits
+        id: upstream
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import subprocess
+          from pathlib import Path
+
+          path = Path("upstream-versions.json")
+          versions = json.loads(path.read_text())
+          changes = []
+
+          for key, item in versions.items():
+              repo = item["repo"]
+              ref = item["ref"]
+              remote_ref = f"refs/heads/{ref}"
+              output = subprocess.check_output(
+                  ["git", "ls-remote", f"https://github.com/{repo}.git", remote_ref],
+                  text=True,
+              ).strip()
+              if not output:
+                  raise SystemExit(f"Could not resolve {repo} {remote_ref}")
+
+              latest = output.split()[0]
+              current = item.get("commit", "")
+              print(f"{key}: {current} -> {latest}")
+              if latest != current:
+                  item["commit"] = latest
+                  changes.append(f"{key}: {current[:12]} -> {latest[:12]}")
+
+          if changes:
+              path.write_text(json.dumps(versions, indent=2, ensure_ascii=False) + "\n")
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output_file:
+              print(f"changed={'true' if changes else 'false'}", file=output_file)
+              print("summary<<EOF", file=output_file)
+              if changes:
+                  print("\n".join(changes), file=output_file)
+              else:
+                  print("No upstream changes.", file=output_file)
+              print("EOF", file=output_file)
+          PY
+
+      - name: Commit upstream lock update
+        if: steps.upstream.outputs.changed == 'true'
+        run: |
+          set -eux
+          git diff -- upstream-versions.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add upstream-versions.json
+          git commit -m "Update upstream refs"
+          git push
+
+      - name: Trigger Docker publish workflow
+        if: steps.upstream.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run docker-publish.yml --ref "${GITHUB_REF_NAME:-main}"
+
+      - name: Report unchanged
+        if: steps.upstream.outputs.changed != 'true'
+        run: echo "${{ steps.upstream.outputs.summary }}"

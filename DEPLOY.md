@@ -159,6 +159,10 @@ hanfu1997/airplay-panel:latest
 
 ## 更新镜像
 
+本项目会每天自动检测上游 `mikebrady/shairport-sync` 和 `mikebrady/nqptp` 的新 commit。检测到变化后会更新 `upstream-versions.json`，再触发 GitHub Actions 重新编译并发布 Docker Hub 镜像。
+
+如果上游没有变化，不会重复编译。如果上游改动导致 `SPS_MODEL` 补丁匹配失败，Actions 会失败并停止发布，避免推送不可用镜像。
+
 进入 compose 所在目录：
 
 ```bash

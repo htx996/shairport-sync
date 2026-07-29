@@ -22,6 +22,7 @@
 │   └── model.env
 ├── data/
 │   └── settings.json
+├── upstream-versions.json
 ├── DEPLOY.md
 ├── NOTICE
 └── README.md
@@ -154,11 +155,18 @@ docker compose -f docker-compose.published.yml up -d
 - 手动运行 workflow
 - PR 会只测试和构建，不推送 Docker Hub
 
+上游自动检测：
+
+- `.github/workflows/upstream-sync.yml` 每天自动检查 `mikebrady/shairport-sync` 的 `master` 和 `mikebrady/nqptp` 的 `main`。
+- 如果 upstream commit 没变，不会提交，也不会重新编译。
+- 如果 upstream commit 变了，workflow 会更新 `upstream-versions.json` 并推送一个提交，然后显式触发 Docker 镜像重新构建和发布。
+- 这不是把作者仓库 merge 进来；它只是锁定新的 upstream commit，让 Dockerfile 在构建时拉取这个版本并继续套用本项目的补丁。
+
 发布顺序：
 
 1. 跑 WebUI 配置生成测试。
 2. 解析两份 compose YAML 并检查 host 网络、`SYS_NICE`、`/dev/snd`。
-3. 下载最新上游 `shairport.c`，确认 `config.model = strdup("ShairportSync")` 仍能被补丁命中。
+3. 按 `upstream-versions.json` 下载锁定版本的 `shairport.c`，确认 `config.model = strdup("ShairportSync")` 仍能被补丁命中。
 4. 构建 `linux/amd64` 的 shairport-sync 镜像。
 5. 构建 `linux/amd64` 的 WebUI 镜像。
 6. 只有前面成功，并且 Docker Hub secrets 存在，才推送到 Docker Hub。
