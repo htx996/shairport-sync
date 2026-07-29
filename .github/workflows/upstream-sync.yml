@@ -2,8 +2,8 @@ name: Check upstream updates
 
 on:
   schedule:
-    # 02:23 Asia/Shanghai. GitHub cron uses UTC.
-    - cron: "23 18 * * *"
+    # Check hourly. GitHub cron uses UTC and may be delayed under load.
+    - cron: "17 * * * *"
   workflow_dispatch:
 
 permissions:
