@@ -2,7 +2,7 @@
 
 这是给 UGREEN NASync DXP4800 Pro（x86_64 / UGOS Pro / Debian 系）准备的非官方 shairport-sync AirPlay 2 接收端容器和 Web 配置面板。
 
-## 交付内容
+## 项目结构
 
 ```text
 .
