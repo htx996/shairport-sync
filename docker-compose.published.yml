@@ -1,9 +1,7 @@
-name: shairport-sync-panel
-
 services:
   shairport-sync:
-    image: docker.io/${DOCKERHUB_NAMESPACE:-hanfu1997}/airplay:latest
-    container_name: shairport-sync
+    image: hanfu1997/airplay:latest
+    container_name: airplay
     platform: linux/amd64
     network_mode: host
     restart: unless-stopped
@@ -16,15 +14,15 @@ services:
       - /var/run/dbus:/var/run/dbus
       - /var/run/avahi-daemon/socket:/var/run/avahi-daemon/socket
     environment:
-      TZ: ${TZ:-Asia/Shanghai}
+      TZ: Asia/Shanghai
     logging:
       options:
-        max-size: "500k"
+        max-size: "200k"
         max-file: "5"
 
   webui:
-    image: docker.io/${DOCKERHUB_NAMESPACE:-hanfu1997}/airplay-panel:latest
-    container_name: shairport-sync-webui
+    image: hanfu1997/airplay-panel:latest
+    container_name: airplay-panel
     platform: linux/amd64
     network_mode: host
     restart: unless-stopped
@@ -35,11 +33,11 @@ services:
       - ./data:/data
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      TZ: ${TZ:-Asia/Shanghai}
-      SHAIRPORT_CONTAINER: shairport-sync
+      TZ: Asia/Shanghai
+      SHAIRPORT_CONTAINER: airplay
       PANEL_HOST: 0.0.0.0
-      PANEL_PORT: "8099"
+      PANEL_PORT: "18090"
       # PANEL_USER: admin
-      # PANEL_PASSWORD: "change-me"
+      # PANEL_PASSWORD: "www.com123"
     depends_on:
       - shairport-sync
