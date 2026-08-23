@@ -31,7 +31,8 @@ services:
 
   webui:
     build:
-      context: ./webui
+      context: .
+      dockerfile: webui/Dockerfile
     image: local/shairport-sync-webui:latest
     container_name: shairport-sync-webui
     platform: linux/amd64

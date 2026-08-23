@@ -29,11 +29,21 @@ jobs:
           import json
           import os
           import subprocess
+          import urllib.request
           from pathlib import Path
 
           path = Path("upstream-versions.json")
           versions = json.loads(path.read_text())
           changes = []
+
+          def latest_release_version(repo):
+              request = urllib.request.Request(
+                  f"https://api.github.com/repos/{repo}/releases/latest",
+                  headers={"User-Agent": "shairport-sync-panel-upstream-sync"},
+              )
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  release = json.loads(response.read().decode("utf-8"))
+              return str(release["tag_name"]).strip().lstrip("vV")
 
           for key, item in versions.items():
               repo = item["repo"]
@@ -52,6 +62,14 @@ jobs:
               if latest != current:
                   item["commit"] = latest
                   changes.append(f"{key}: {current[:12]} -> {latest[:12]}")
+
+              if key == "shairport_sync":
+                  latest_version = latest_release_version(repo)
+                  current_version = str(item.get("version", "")).strip().lstrip("vV")
+                  print(f"{key} version: {current_version or '-'} -> {latest_version}")
+                  if latest_version and latest_version != current_version:
+                      item["version"] = latest_version
+                      changes.append(f"{key} version: {current_version or '-'} -> {latest_version}")
 
           if changes:
               path.write_text(json.dumps(versions, indent=2, ensure_ascii=False) + "\n")

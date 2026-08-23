@@ -157,9 +157,9 @@ docker compose -f docker-compose.published.yml up -d
 
 上游自动检测：
 
-- `.github/workflows/upstream-sync.yml` 每小时自动检查 `mikebrady/shairport-sync` 的 `master` 和 `mikebrady/nqptp` 的 `main`。
-- 如果 upstream commit 没变，不会提交，也不会重新编译。
-- 如果 upstream commit 变了，workflow 会更新 `upstream-versions.json` 并推送一个提交，然后显式触发 Docker 镜像重新构建和发布。
+- `.github/workflows/upstream-sync.yml` 每小时自动检查 `mikebrady/shairport-sync` 的 `master`、最新 Release 版本号，以及 `mikebrady/nqptp` 的 `main`。
+- 如果 upstream commit 和官方版本号都没变，不会提交，也不会重新编译。
+- 如果 upstream commit 或官方版本号变了，workflow 会更新 `upstream-versions.json` 并推送一个提交，然后显式触发 Docker 镜像重新构建和发布。
 - 这不是把作者仓库 merge 进来；它只是锁定新的 upstream commit，让 Dockerfile 在构建时拉取这个版本并继续套用本项目的补丁。
 
 发布顺序：

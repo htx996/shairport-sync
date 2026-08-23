@@ -1166,15 +1166,44 @@
     .action-shell {
       position: relative;
       z-index: 1;
+      width: min(var(--page-max), calc(100% - 56px));
+      min-height: 42px;
+      margin: 0 auto;
       padding: 0 0 42px;
       pointer-events: none;
     }
 
     .action-align {
-      width: min(var(--page-max), calc(100% - 56px));
-      margin: 0 auto;
+      width: 100%;
+      margin: 0;
       display: flex;
       justify-content: flex-end;
+    }
+
+    .version-badge {
+      position: absolute;
+      left: 50%;
+      top: 21px;
+      transform: translate(-50%, -50%);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 30px;
+      padding: 0 12px;
+      border-radius: 999px;
+      color: var(--secondary);
+      background: color-mix(in srgb, var(--glass-heavy), transparent 72%);
+      border: 1px solid color-mix(in srgb, var(--edge), transparent 58%);
+      box-shadow:
+        0 10px 24px color-mix(in srgb, var(--shadow-soft), transparent 28%),
+        inset 0 1px 0 color-mix(in srgb, var(--inner-edge), transparent 20%);
+      -webkit-backdrop-filter: blur(24px) saturate(1.45);
+      backdrop-filter: blur(24px) saturate(1.45);
+      font-size: 12px;
+      font-weight: 760;
+      letter-spacing: 0;
+      white-space: nowrap;
+      pointer-events: none;
     }
 
     .toolbar {
@@ -1358,7 +1387,7 @@
       }
 
       .action-align {
-        justify-content: center;
+        justify-content: flex-end;
       }
     }
 
@@ -1487,6 +1516,7 @@
 
       .action-align {
         width: calc(100% - 20px);
+        margin: 0 auto;
       }
 
       .toolbar {
@@ -1624,6 +1654,7 @@
   </main>
 
   <div class="action-shell">
+    <div class="version-badge" id="versionBadge" aria-label="当前版本">V 5.2.2</div>
     <div class="action-align">
       <div class="toolbar">
         <button class="btn icon-only" id="restartBtn" title="重启" aria-label="重启" type="button">
@@ -1926,6 +1957,7 @@
       renderModelCards(currentState.models);
       renderWarnings(currentState.warnings);
 
+      setText("versionBadge", `V ${currentState.version || "5.2.2"}`);
       updateRangeFill();
       updateDbControls();
       updateSummaries();

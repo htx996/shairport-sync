@@ -35,6 +35,30 @@ AIRPLAY_IMAGE_HINTS = tuple(
 )
 PANEL_HOST = os.environ.get("PANEL_HOST", "0.0.0.0")
 PANEL_PORT = int(os.environ.get("PANEL_PORT", "8099"))
+UPSTREAM_VERSION_PATHS = (APP_DIR / "upstream-versions.json", APP_DIR.parent / "upstream-versions.json")
+
+
+def clean_version(value: Any) -> str:
+    text = str(value or "").strip().lstrip("vV").strip()
+    return re.sub(r"[^0-9A-Za-z._+-]", "", text)[:32]
+
+
+def load_shairport_sync_version() -> str:
+    env_version = clean_version(os.environ.get("SHAIRPORT_SYNC_VERSION"))
+    if env_version:
+        return env_version
+    for path in UPSTREAM_VERSION_PATHS:
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        version = clean_version(data.get("shairport_sync", {}).get("version"))
+        if version:
+            return version
+    return "5.2.2"
+
+
+SHAIRPORT_SYNC_VERSION = load_shairport_sync_version()
 
 MODELS = [
     {
@@ -726,6 +750,7 @@ def api_state() -> Response:
             "warnings": build_warnings(settings, interfaces, audio_devices),
             "config": read_text_file(CONF_PATH),
             "model_env": read_text_file(MODEL_ENV_PATH),
+            "version": SHAIRPORT_SYNC_VERSION,
             "time": int(time.time()),
         }
     )

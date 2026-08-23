@@ -16,11 +16,12 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-COPY requirements.txt .
+COPY webui/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app.py ./app.py
-COPY templates ./templates
+COPY webui/app.py ./app.py
+COPY webui/templates ./templates
+COPY upstream-versions.json ./upstream-versions.json
 
 VOLUME ["/config", "/data"]
 EXPOSE 8099

@@ -147,7 +147,7 @@ jobs:
       - name: Build WebUI image
         uses: docker/build-push-action@v6
         with:
-          context: ./webui
+          context: .
           file: ./webui/Dockerfile
           platforms: linux/amd64
           push: ${{ github.event_name != 'pull_request' && env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != '' }}
