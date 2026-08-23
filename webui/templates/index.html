@@ -1181,29 +1181,31 @@
     }
 
     .version-badge {
-      position: absolute;
+      position: fixed;
       left: 50%;
-      top: 21px;
-      transform: translate(-50%, -50%);
+      bottom: max(18px, env(safe-area-inset-bottom));
+      z-index: 38;
+      transform: translateX(-50%);
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-height: 30px;
-      padding: 0 12px;
+      min-height: 28px;
+      padding: 0 11px;
       border-radius: 999px;
-      color: var(--secondary);
-      background: color-mix(in srgb, var(--glass-heavy), transparent 72%);
-      border: 1px solid color-mix(in srgb, var(--edge), transparent 58%);
+      color: color-mix(in srgb, var(--label), transparent 18%);
+      background: color-mix(in srgb, var(--glass-heavy), var(--bg) 34%);
+      border: 1px solid color-mix(in srgb, var(--edge), var(--label) 7%);
       box-shadow:
         0 10px 24px color-mix(in srgb, var(--shadow-soft), transparent 28%),
         inset 0 1px 0 color-mix(in srgb, var(--inner-edge), transparent 20%);
-      -webkit-backdrop-filter: blur(24px) saturate(1.45);
-      backdrop-filter: blur(24px) saturate(1.45);
+      -webkit-backdrop-filter: blur(22px) saturate(1.45);
+      backdrop-filter: blur(22px) saturate(1.45);
       font-size: 12px;
-      font-weight: 760;
+      font-weight: 820;
       letter-spacing: 0;
       white-space: nowrap;
       pointer-events: none;
+      user-select: none;
     }
 
     .toolbar {
