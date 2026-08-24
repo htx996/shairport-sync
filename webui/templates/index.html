@@ -2243,6 +2243,13 @@
       };
     }
 
+    async function sendRealtimeVolume() {
+      return api("/api/volume", {
+        method: "POST",
+        body: JSON.stringify(realtimeVolumeSettings())
+      });
+    }
+
     function comparableSettings(settings) {
       return {
         name: String(settings.name ?? ""),
@@ -2416,6 +2423,13 @@
       updateDbControls();
       updateSummaries();
       markCurrentSettingsSaved();
+      if ($("mixer_control_name").value) {
+        try {
+          await sendRealtimeVolume();
+        } catch (_) {
+          // Loading the saved form remains useful when the Mixer is temporarily unavailable.
+        }
+      }
       setStatus("已读取当前配置");
     }
 
@@ -2448,10 +2462,7 @@
         if (!silentNoMixer) setStatus("选择硬件音量控件后可实时应用", false);
         return;
       }
-      const result = await api("/api/volume", {
-        method: "POST",
-        body: JSON.stringify(realtimeVolumeSettings())
-      });
+      const result = await sendRealtimeVolume();
       setStatus(result.ok ? "硬件音量已更新" : `音量未应用：${result.error || "检查 Mixer 控件"}`, Boolean(result.ok));
     }
 
