@@ -244,3 +244,41 @@ def test_container_discovery_uses_image_when_name_is_rewritten():
     )
 
     assert choose_shairport_container([receiver]) is receiver
+
+
+def test_realtime_volume_does_not_persist_unsaved_settings(monkeypatch):
+    saved_settings = normalize_settings(
+        {
+            "name": "Saved AirPlay",
+            "model": "AirPort10,115",
+            "audio_device": "hw:1,0",
+            "mixer_control_name": "PCM",
+            "volume_percent": 40,
+        }
+    )
+    persisted = []
+    applied = []
+
+    monkeypatch.setattr(app_module, "load_settings", lambda: saved_settings)
+    monkeypatch.setattr(app_module, "save_settings", lambda settings: persisted.append(settings))
+    monkeypatch.setattr(
+        app_module,
+        "apply_hardware_volume",
+        lambda settings: applied.append(settings) or {"ok": True},
+    )
+
+    response = app_module.app.test_client().post(
+        "/api/volume",
+        json={
+            "name": "Unsaved name",
+            "model": "AudioAccessory6,1",
+            "audio_device": "hw:1,0",
+            "mixer_control_name": "PCM",
+            "volume_percent": 86,
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.get_json()["ok"] is True
+    assert persisted == []
+    assert applied[0]["volume_percent"] == 86

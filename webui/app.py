@@ -825,7 +825,7 @@ def api_mixers() -> Response:
 @app.post("/api/volume")
 def api_volume() -> Response:
     settings = normalize_settings({**load_settings(), **request_payload()})
-    save_settings(settings)
+    # Realtime mixer changes are previews; only /api/save commits panel settings.
     return jsonify(apply_hardware_volume(settings))
 
 
