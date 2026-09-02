@@ -3,7 +3,7 @@
     "repo": "mikebrady/shairport-sync",
     "ref": "master",
     "version": "5.2.3",
-    "commit": "a5d8f46a54c0440bdd5290d385fe8a740c636d36"
+    "commit": "7ab10aa141160a7c946459c0f47b4e8e4509637c"
   },
   "nqptp": {
     "repo": "mikebrady/nqptp",
