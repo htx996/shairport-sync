@@ -34,12 +34,11 @@ cd "$APP_DIR"
 创建 `docker-compose.yml`：
 
 ```yaml
-name: shairport-sync-panel
-
 services:
   shairport-sync:
-    image: docker.io/hanfu1997/airplay:latest
-    container_name: shairport-sync
+    image: hanfu1997/airplay:latest
+    pull_policy: always
+    container_name: airplay
     platform: linux/amd64
     network_mode: host
     restart: unless-stopped
@@ -52,15 +51,16 @@ services:
       - /var/run/dbus:/var/run/dbus
       - /var/run/avahi-daemon/socket:/var/run/avahi-daemon/socket
     environment:
-      TZ: ${TZ:-Asia/Shanghai}
+      TZ: Asia/Shanghai
     logging:
       options:
-        max-size: "500k"
+        max-size: "200k"
         max-file: "5"
 
   webui:
-    image: docker.io/hanfu1997/airplay-panel:latest
-    container_name: shairport-sync-webui
+    image: hanfu1997/airplay-panel:latest
+    pull_policy: always
+    container_name: airplay-panel
     platform: linux/amd64
     network_mode: host
     restart: unless-stopped
@@ -71,14 +71,18 @@ services:
       - ./data:/data
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      TZ: ${TZ:-Asia/Shanghai}
-      SHAIRPORT_CONTAINER: shairport-sync
+      TZ: Asia/Shanghai
+      SHAIRPORT_CONTAINER: airplay
       PANEL_HOST: 0.0.0.0
-      PANEL_PORT: "8099"
+      PANEL_PORT: "18090"
       # PANEL_USER: admin
-      # PANEL_PASSWORD: "change-me"
+      # PANEL_PASSWORD: "请替换为你自己的密码"
     depends_on:
       - shairport-sync
+    logging:
+      options:
+        max-size: "200k"
+        max-file: "5"
 ```
 
 部署前先检查 YAML：
@@ -102,7 +106,7 @@ docker compose logs -f
 打开面板：
 
 ```text
-http://NAS_IP:8099
+http://NAS_IP:18090
 ```
 
 第一次进入面板后建议按顺序设置：
@@ -125,9 +129,9 @@ Web 面板容器：
 
 ```text
 TZ=Asia/Shanghai
-SHAIRPORT_CONTAINER=shairport-sync
+SHAIRPORT_CONTAINER=airplay
 PANEL_HOST=0.0.0.0
-PANEL_PORT=8099
+PANEL_PORT=18090
 ```
 
 可选认证：
@@ -157,11 +161,34 @@ hanfu1997/airplay:latest
 hanfu1997/airplay-panel:latest
 ```
 
+## 验证声卡直通和重新部署
+
+USB 声卡先连接 NAS，并用宿主机的 `aplay -l` 确认已识别。再检查两个容器的实际设备映射和声卡列表：
+
+```bash
+docker inspect airplay airplay-panel --format '{{.Name}} devices={{json .HostConfig.Devices}}'
+docker exec airplay aplay -l
+docker exec airplay-panel aplay -l
+```
+
+两个容器的设备映射都应包含 `/dev/snd`。只有 `/dev/fuse` 不代表已映射音频设备。如果宿主机能识别 USB 声卡，但容器看不到，请确认两个服务都有 `devices: ["/dev/snd:/dev/snd"]`，再在原项目目录重新创建容器：
+
+```bash
+docker compose config --quiet
+docker compose up -d --force-recreate --pull never --no-build
+```
+
+先确认第一条校验成功，再执行第二条。这次使用已下载的镜像，短暂重启服务；保持原项目目录以及 `./config`、`./data` 挂载路径不变。使用仓库文件时，两条命令都要在 `docker compose` 后加上 `-f docker-compose.published.yml`。只点“重启”不会应用修改后的设备映射。
+
+GUI 部署也应在设备设置中添加 `/dev/snd -> /dev/snd`，重新创建后使用上述命令核实。容器识别声卡后刷新 Web 页面，按设备名称选择 USB 音频输出；编号可能随插拔或重启变化，不要固定沿用旧编号。
+
 ## 更新镜像
 
 本项目会每小时自动检测上游 `mikebrady/shairport-sync` 和 `mikebrady/nqptp` 的新 commit，同时读取 `shairport-sync` 最新 Release 版本号。检测到 commit 或官方版本号变化后会更新 `upstream-versions.json`，再触发 GitHub Actions 重新编译并发布 Docker Hub 镜像。
 
 如果上游没有变化，不会重复编译。如果上游改动导致 `SPS_MODEL` 补丁匹配失败，Actions 会失败并停止发布，避免推送不可用镜像。
+
+发布配置为两个镜像设置了 `pull_policy: always`，部署时会检查并拉取远端镜像。仅修复设备映射、使用本地镜像时，可使用上面的 `--pull never --no-build` 命令覆盖本次拉取策略。
 
 进入 compose 所在目录：
 
@@ -196,7 +223,7 @@ hanfu1997/airplay-panel
 创建容器：
 
 ```text
-容器名：shairport-sync
+容器名：airplay
 镜像：hanfu1997/airplay:latest
 网络：host
 重启策略：unless-stopped / 总是重启
@@ -236,7 +263,7 @@ SYS_NICE
 创建容器：
 
 ```text
-容器名：shairport-sync-webui
+容器名：airplay-panel
 镜像：hanfu1997/airplay-panel:latest
 网络：host
 重启策略：unless-stopped / 总是重启
@@ -261,9 +288,9 @@ SYS_NICE
 
 ```text
 TZ=Asia/Shanghai
-SHAIRPORT_CONTAINER=shairport-sync
+SHAIRPORT_CONTAINER=airplay
 PANEL_HOST=0.0.0.0
-PANEL_PORT=8099
+PANEL_PORT=18090
 ```
 
 可选认证：
@@ -276,7 +303,7 @@ PANEL_PASSWORD=换成强密码
 启动两个容器后访问：
 
 ```text
-http://NAS_IP:8099
+http://NAS_IP:18090
 ```
 
 ## 必须满足的运行条件
@@ -299,13 +326,13 @@ aplay -l
 查看接收端日志：
 
 ```bash
-docker logs -f --tail=120 shairport-sync
+docker logs -f --tail=120 airplay
 ```
 
 查看 Web 面板日志：
 
 ```bash
-docker logs -f --tail=120 shairport-sync-webui
+docker logs -f --tail=120 airplay-panel
 ```
 
 检查是否生成配置：
@@ -319,11 +346,11 @@ cat ./config/model.env
 检查图标标识：
 
 ```bash
-docker logs --tail=80 shairport-sync | grep 'model identifier'
+docker logs --tail=80 airplay | grep 'model identifier'
 ```
 
 检查 avahi 模式：
 
 ```bash
-docker logs --tail=80 shairport-sync | grep 'avahi mode'
+docker logs --tail=80 airplay | grep 'avahi mode'
 ```

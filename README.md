@@ -49,6 +49,8 @@ docker compose -f docker-compose.published.yml config
 docker compose -f docker-compose.published.yml up -d
 ```
 
+发布部署默认使用 `airplay`、`airplay-panel` 容器名，面板地址为 `http://NAS_IP:18090`。两个镜像均设置 `pull_policy: always`，两个容器均映射 `/dev/snd`，日志限制为每份 `200k`、保留 `5` 份。声卡识别与设备映射排查见 [部署验证](DEPLOY.md#验证声卡直通和重新部署)。
+
 ### 方法二：GUI 图形界面搜索镜像部署
 
 在 UGOS / NAS Docker 图形界面中搜索并下载两个镜像：
@@ -61,7 +63,7 @@ hanfu1997/airplay-panel
 创建第一个容器：
 
 ```text
-容器名：shairport-sync
+容器名：airplay
 镜像：hanfu1997/airplay:latest
 网络：host
 重启策略：unless-stopped / 总是重启
@@ -76,7 +78,7 @@ hanfu1997/airplay-panel
 创建第二个容器：
 
 ```text
-容器名：shairport-sync-webui
+容器名：airplay-panel
 镜像：hanfu1997/airplay-panel:latest
 网络：host
 重启策略：unless-stopped / 总是重启
@@ -85,14 +87,14 @@ hanfu1997/airplay-panel
 挂载：你的持久化目录/data -> /data
 挂载：/var/run/docker.sock -> /var/run/docker.sock
 环境变量：TZ=Asia/Shanghai
-环境变量：SHAIRPORT_CONTAINER=shairport-sync
+环境变量：SHAIRPORT_CONTAINER=airplay
 环境变量：PANEL_HOST=0.0.0.0
-环境变量：PANEL_PORT=8099
+环境变量：PANEL_PORT=18090
 ```
 
 GUI 方法的完整字段和注意事项见 [DEPLOY.md](DEPLOY.md#方法二gui-图形界面搜索镜像下载部署)。
 
-GUI 部署时不要做桥接端口映射，两个容器都必须使用 host 网络；启动后访问 `http://NAS_IP:8099`。
+GUI 部署时不要做桥接端口映射，两个容器都必须使用 host 网络；启动后访问 `http://NAS_IP:18090`。
 
 图标型号不用手工配置环境变量。面板会把选择结果写到 `config/model.env`，接收端启动时读取里面的 `SPS_MODEL`。
 

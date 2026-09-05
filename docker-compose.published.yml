@@ -1,6 +1,7 @@
 services:
   shairport-sync:
     image: hanfu1997/airplay:latest
+    pull_policy: always
     container_name: airplay
     platform: linux/amd64
     network_mode: host
@@ -22,6 +23,7 @@ services:
 
   webui:
     image: hanfu1997/airplay-panel:latest
+    pull_policy: always
     container_name: airplay-panel
     platform: linux/amd64
     network_mode: host
@@ -38,6 +40,10 @@ services:
       PANEL_HOST: 0.0.0.0
       PANEL_PORT: "18090"
       # PANEL_USER: admin
-      # PANEL_PASSWORD: "www.com123"
+      # PANEL_PASSWORD: "请替换为你自己的密码"
     depends_on:
       - shairport-sync
+    logging:
+      options:
+        max-size: "200k"
+        max-file: "5"
