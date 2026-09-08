@@ -98,18 +98,19 @@ GUI 部署时不要做桥接端口映射，两个容器都必须使用 host 网�
 
 图标型号不用手工配置环境变量。面板会把选择结果写到 `config/model.env`，接收端启动时读取里面的 `SPS_MODEL`。
 
-## 本地构建启动
+## 默认 Compose 启动
 
-在 NAS 上进入项目目录：
+`docker-compose.yml` 与 `docker-compose.published.yml` 内容一致，均直接拉取 Docker Hub 已发布镜像，不在 NAS 上编译源码。在 NAS 上进入项目目录：
 
 ```bash
-docker compose up -d --build
+docker compose config
+docker compose up -d
 ```
 
-面板默认监听宿主机 `8099`：
+面板默认监听宿主机 `18090`：
 
 ```text
-http://NAS_IP:8099
+http://NAS_IP:18090
 ```
 
 首次启动时如果 `config/` 是空目录，AirPlay 容器会自动写入一个可启动的默认 `shairport-sync.conf` 和 `model.env`，默认名称为 `AirPlay`。进面板后再选择音频输出和图标，保存并重启生效。
@@ -129,8 +130,8 @@ PANEL_PASSWORD: "换成强密码"
 `docker-compose.published.yml` 默认使用 Docker Hub 镜像名：
 
 ```yaml
-docker.io/${DOCKERHUB_NAMESPACE:-hanfu1997}/airplay:latest
-docker.io/${DOCKERHUB_NAMESPACE:-hanfu1997}/airplay-panel:latest
+hanfu1997/airplay:latest
+hanfu1997/airplay-panel:latest
 ```
 
 发布到 Docker Hub 后可直接运行：
@@ -140,7 +141,7 @@ docker compose -f docker-compose.published.yml config
 docker compose -f docker-compose.published.yml up -d
 ```
 
-如果以后换 namespace，再覆盖 `DOCKERHUB_NAMESPACE`。完整部署说明和图形界面部署字段见 [DEPLOY.md](DEPLOY.md)。
+如果以后更换镜像仓库，请同步修改两份 Compose 的 `image` 字段。完整部署说明和图形界面部署字段见 [DEPLOY.md](DEPLOY.md)。
 
 ## GitHub 编译并推送 Docker Hub
 
