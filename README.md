@@ -7,7 +7,6 @@
 ```text
 .
 ├── docker-compose.yml
-├── docker-compose.published.yml
 ├── build/
 │   ├── Dockerfile
 │   └── entrypoint.sh
@@ -45,8 +44,8 @@ cd "$APP_DIR"
 创建 `docker-compose.yml`，完整 YAML 见 [DEPLOY.md](DEPLOY.md#方法一docker-compose-部署推荐)。也可以直接使用仓库里的：
 
 ```bash
-docker compose -f docker-compose.published.yml config
-docker compose -f docker-compose.published.yml up -d
+docker compose config
+docker compose up -d
 ```
 
 发布部署默认使用 `airplay`、`airplay-panel` 容器名，面板地址为 `http://NAS_IP:18090`。两个镜像均设置 `pull_policy: always`，两个容器均映射 `/dev/snd`，日志限制为每份 `200k`、保留 `5` 份。声卡识别与设备映射排查见 [部署验证](DEPLOY.md#验证声卡直通和重新部署)。
@@ -100,7 +99,7 @@ GUI 部署时不要做桥接端口映射，两个容器都必须使用 host 网�
 
 ## 默认 Compose 启动
 
-`docker-compose.yml` 与 `docker-compose.published.yml` 内容一致，均直接拉取 Docker Hub 已发布镜像，不在 NAS 上编译源码。在 NAS 上进入项目目录：
+`docker-compose.yml` 是唯一的部署配置，直接拉取 Docker Hub 已发布镜像，不在 NAS 上编译源码。在 NAS 上进入项目目录：
 
 ```bash
 docker compose config
@@ -127,7 +126,7 @@ PANEL_PASSWORD: "换成强密码"
 
 ## 已发布镜像部署
 
-`docker-compose.published.yml` 默认使用 Docker Hub 镜像名：
+`docker-compose.yml` 默认使用 Docker Hub 镜像名：
 
 ```yaml
 hanfu1997/airplay:latest
@@ -137,11 +136,11 @@ hanfu1997/airplay-panel:latest
 发布到 Docker Hub 后可直接运行：
 
 ```bash
-docker compose -f docker-compose.published.yml config
-docker compose -f docker-compose.published.yml up -d
+docker compose config
+docker compose up -d
 ```
 
-如果以后更换镜像仓库，请同步修改两份 Compose 的 `image` 字段。完整部署说明和图形界面部署字段见 [DEPLOY.md](DEPLOY.md)。
+如果以后更换镜像仓库，请修改 `docker-compose.yml` 的 `image` 字段。完整部署说明和图形界面部署字段见 [DEPLOY.md](DEPLOY.md)。
 
 ## GitHub 编译并推送 Docker Hub
 
@@ -168,7 +167,7 @@ docker compose -f docker-compose.published.yml up -d
 发布顺序：
 
 1. 跑 WebUI 配置生成测试。
-2. 解析两份 compose YAML 并检查 host 网络、`SYS_NICE`、`/dev/snd`。
+2. 校验 `docker-compose.yml`，检查两个服务的 host 网络和 `/dev/snd` 映射，以及接收端的 `SYS_NICE`。
 3. 按 `upstream-versions.json` 下载锁定版本的 `shairport.c`，确认 `config.model = strdup("ShairportSync")` 仍能被补丁命中。
 4. 构建 `linux/amd64` 的 shairport-sync 镜像。
 5. 构建 `linux/amd64` 的 WebUI 镜像。

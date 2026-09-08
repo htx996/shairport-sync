@@ -150,11 +150,11 @@ PANEL_PASSWORD=换成强密码
 ```bash
 git clone https://github.com/htx996/shairport-sync.git
 cd shairport-sync
-docker compose -f docker-compose.published.yml config
-docker compose -f docker-compose.published.yml up -d
+docker compose config
+docker compose up -d
 ```
 
-`docker-compose.published.yml` 默认使用：
+`docker-compose.yml` 默认使用：
 
 ```text
 hanfu1997/airplay:latest
@@ -178,7 +178,7 @@ docker compose config --quiet
 docker compose up -d --force-recreate --pull never --no-build
 ```
 
-先确认第一条校验成功，再执行第二条。这次使用已下载的镜像，短暂重启服务；保持原项目目录以及 `./config`、`./data` 挂载路径不变。使用仓库文件时，两条命令都要在 `docker compose` 后加上 `-f docker-compose.published.yml`。只点“重启”不会应用修改后的设备映射。
+先确认第一条校验成功，再执行第二条。这次使用已下载的镜像，短暂重启服务；保持原项目目录以及 `./config`、`./data` 挂载路径不变，在 `docker-compose.yml` 所在目录执行。只点“重启”不会应用修改后的设备映射。
 
 GUI 部署也应在设备设置中添加 `/dev/snd -> /dev/snd`，重新创建后使用上述命令核实。容器识别声卡后刷新 Web 页面，按设备名称选择 USB 音频输出；编号可能随插拔或重启变化，不要固定沿用旧编号。
 

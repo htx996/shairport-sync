@@ -54,12 +54,12 @@ jobs:
           import yaml
           from pathlib import Path
 
-          for name in ("docker-compose.yml", "docker-compose.published.yml"):
-              data = yaml.safe_load(Path(name).read_text())
-              service = data["services"]["shairport-sync"]
+          data = yaml.safe_load(Path("docker-compose.yml").read_text())
+          for name in ("shairport-sync", "webui"):
+              service = data["services"][name]
               assert service["network_mode"] == "host"
-              assert "SYS_NICE" in service["cap_add"]
               assert "/dev/snd:/dev/snd" in service["devices"]
+          assert "SYS_NICE" in data["services"]["shairport-sync"]["cap_add"]
           PY
 
       - name: Verify upstream shairport-sync model patch still applies
